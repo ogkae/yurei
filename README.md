@@ -638,6 +638,6 @@ Contributions welcome! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) before s
 
 ---
 
-made with <a href="https://github.com/jokyng"><code>jokyng</code></a> by <a href="https://github.com/ogkae"><code>ogcae</code></a>
+made with <a href="https://github.com/hexa-hosting"><code>hexaʰ</code></a> by <a href="https://github.com/ogkae"><code>ogkae</code></a>
 
 <a href="./LICENSE"><code>LICENSE</code></a> · <a href="./CONTRIBUTING.md"><code>CONTRIBUTE</code></a> · <a href="./CHANGELOG.md"><code>CHANGELOG</code></a>
