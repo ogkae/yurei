@@ -2,7 +2,7 @@
 
 ZDP Python library for encryption, authentication, and secure identifier generation.
 
-![Version](https://img.shields.io/badge/2.1.0-stable-5d5d5d?style=flat-square&logo=python) ![Python](https://img.shields.io/badge/python-3.8+-5d5d5d?style=flat-square&logo=python) [![Give a star](https://img.shields.io/badge/Give%20a%20⭐-%20-5d5d5d?style=flat-square&logo=github)](https://github.com/ogcae/yurei/stargazers)
+![Version](https://img.shields.io/badge/1.3.0-stable-5d5d5d?style=flat-square&logo=python) ![Python](https://img.shields.io/badge/python-3.8+-5d5d5d?style=flat-square&logo=python) [![Give a star](https://img.shields.io/badge/Give%20a%20⭐-%20-5d5d5d?style=flat-square&logo=github)](https://github.com/ogkae/yurei/stargazers)
 
 **Yurei** *(幽霊 - ghost)* provides cryptographic primitives for modern Python applications without external dependencies. Built for prototyping secure systems, internal tools, and environments where dependency installation is restricted.
 
@@ -632,8 +632,8 @@ Contributions welcome! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) before s
 
 ## Contributors
 
-<a href="https://github.com/ogcae/yurei/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=ogcae/yurei" />
+<a href="https://github.com/ogkae/yurei/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=ogkae/yurei" />
 </a>
 
 ---
