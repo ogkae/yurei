@@ -1,14 +1,20 @@
+<div align="center">
+    
 # yurei
-
 ZDP Python library for encryption, authentication, and secure identifier generation.
+ 
 
-![Version](https://img.shields.io/badge/1.3.0-stable-5d5d5d?style=flat-square&logo=python) ![Python](https://img.shields.io/badge/python-3.8+-5d5d5d?style=flat-square&logo=python) [![Give a star](https://img.shields.io/badge/Give%20a%20⭐-%20-5d5d5d?style=flat-square&logo=github)](https://github.com/ogkae/yurei/stargazers)
+![Version](https://img.shields.io/badge/1.3.0-stable-5d5d5d?style=flat-square&logo=python) ![Python](https://img.shields.io/badge/python-3.8+-5d5d5d?style=flat-square&logo=python) [![Give a star](https://img.shields.io/badge/Give%20a%20⭐-%20-5d5d5d?style=flat-square&logo=github)](https://github.com/ogkae/yurei/stargazers) 
+
+</div>
+
+---
 
 **Yurei** *(幽霊 - ghost)* provides cryptographic primitives for modern Python applications without external dependencies. Built for prototyping secure systems, internal tools, and environments where dependency installation is restricted.
 
 ---
 
-## Table of Contents
+## > Table of Contents
 
 - [Install](#install)
 - [Quick Start](#quick-start)
@@ -327,7 +333,7 @@ pbkdf2_sha256(password: bytes, salt: bytes, iterations: int, dklen: int) -> byte
 
 ## Usage Examples
 
-### Complete User Authentication Flow
+### [A] Complete User Authentication Flow
 
 ```python
 from yurei import (
@@ -630,7 +636,7 @@ Contributions welcome! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) before s
 
 ---
 
-## Contributors
+## > Contributors
 
 <a href="https://github.com/ogkae/yurei/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=ogkae/yurei" />
@@ -641,3 +647,4 @@ Contributions welcome! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) before s
 made with <a href="https://github.com/hexa-hosting"><code>hexaʰ</code></a> by <a href="https://github.com/ogkae"><code>ogkae</code></a>
 
 <a href="./LICENSE"><code>LICENSE</code></a> · <a href="./CONTRIBUTING.md"><code>CONTRIBUTE</code></a> · <a href="./CHANGELOG.md"><code>CHANGELOG</code></a>
+
