@@ -4,7 +4,6 @@
 
 from .helpers import b64u_encode, b64u_decode, constant_time_eq, now_millis
 from typing import Dict, Optional
-
 import hashlib
 import hmac
 
@@ -25,13 +24,26 @@ def create_token(
     Returns:
         str: Token string containing the payload and signature.
     """
+    if not secret or len(secret) < 16:
+        raise ValueError("Secret must be at least 16 bytes")
+    
+    if ttl_seconds <= 0:
+        raise ValueError("ttl_seconds must be positive")
+    
     exp = now_millis() + ttl_seconds * 1000
+    
+    # more efficient payload construction
     parts = [f"{k}={v}" for k, v in payload.items()]
     parts.append(f"exp={exp}")
     raw = ";".join(parts).encode("utf-8")
+    
     raw_b64 = b64u_encode(raw)
-    sig = hmac.new(secret, raw_b64.encode("ascii"), hashlib.sha256).digest()
-    return f"{raw_b64}.{b64u_encode(sig)}"
+    raw_b64_bytes = raw_b64.encode("ascii")
+    
+    sig = hmac.new(secret, raw_b64_bytes, hashlib.sha256).digest()
+    sig_b64 = b64u_encode(sig)
+    
+    return f"{raw_b64}.{sig_b64}"
 
 def verify_token(token: str, secret: bytes) -> Optional[Dict[str, str]]:
     """
@@ -45,15 +57,31 @@ def verify_token(token: str, secret: bytes) -> Optional[Dict[str, str]]:
         Optional[Dict[str, str]]: Payload dictionary without the 'exp' key
         if verification succeeds; otherwise, None.
     """
+    if not secret or len(secret) < 16:
+        return None
+    
     try:
+        # basic format validation
+        if "." not in token:
+            return None
+        
         raw_b64, sig_b64 = token.split(".", 1)
+        
+        # avoid empty tokens
+        if not raw_b64 or not sig_b64:
+            return None
+        
         sig = b64u_decode(sig_b64)
-        expected = hmac.new(raw_b64.encode("ascii"), secret, hashlib.sha256).digest()
+        raw_b64_bytes = raw_b64.encode("ascii")
+        
+        expected = hmac.new(secret, raw_b64_bytes, hashlib.sha256).digest()
+        
         if not constant_time_eq(sig, expected):
             return None
 
         raw = b64u_decode(raw_b64)
         s = raw.decode("utf-8")
+        
         items = {}
         for part in s.split(";"):
             if "=" not in part:
@@ -61,11 +89,17 @@ def verify_token(token: str, secret: bytes) -> Optional[Dict[str, str]]:
             k, v = part.split("=", 1)
             items[k] = v
 
-        exp = int(items.get("exp", "0"))
+        exp_str = items.get("exp", "0")
+        try:
+            exp = int(exp_str)
+        except ValueError:
+            return None
+        
+        # verify expiration
         if now_millis() > exp:
             return None
 
         items.pop("exp", None)
         return items
-    except Exception:
+    except (ValueError, TypeError, UnicodeDecodeError):
         return None
