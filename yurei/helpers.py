@@ -5,6 +5,9 @@ import time
 import hmac
 import os
 
+# caches for optimizing repetitive operations
+_BASE64_PADDING = "="
+
 def now_millis() -> int:
     """
     Return the current time in milliseconds.
@@ -36,7 +39,7 @@ def b64u_encode(b: bytes) -> str:
     Returns:
         str: Base64 URL-safe encoded string without '=' padding.
     """
-    return base64.urlsafe_b64encode(b).decode("ascii").rstrip("=")
+    return base64.urlsafe_b64encode(b).decode("ascii").rstrip(_BASE64_PADDING)
 
 def b64u_decode(s: str) -> bytes:
     """
@@ -48,8 +51,11 @@ def b64u_decode(s: str) -> bytes:
     Returns:
         bytes: Decoded bytes.
     """
-    padding = "=" * (-len(s) % 4)
-    return base64.urlsafe_b64decode(s + padding)
+    # calculate needed padding more efficiently
+    padding_needed = (4 - len(s) % 4) % 4
+    if padding_needed:
+        s = s + (_BASE64_PADDING * padding_needed)
+    return base64.urlsafe_b64decode(s)
 
 def constant_time_eq(a: bytes, b: bytes) -> bool:
     """
@@ -78,3 +84,31 @@ def pbkdf2_sha256(password: bytes, salt: bytes, iterations: int, dklen: int) -> 
         bytes: Derived key.
     """
     return hashlib.pbkdf2_hmac("sha256", password, salt, iterations, dklen=dklen)
+
+def hkdf_expand(prk: bytes, info: bytes, length: int) -> bytes:
+    """
+    HKDF expand step using HMAC-SHA256.
+    
+    Args:
+        prk (bytes): Pseudorandom key from extract step.
+        info (bytes): Context and application specific information.
+        length (int): Desired output length in bytes.
+    
+    Returns:
+        bytes: Derived key material.
+    """
+    if length <= 0:
+        return b""
+    
+    output = bytearray()
+    t = b""
+    counter = 1
+    
+    while len(output) < length:
+        t = hmac.new(prk, t + info + bytes([counter]), hashlib.sha256).digest()
+        output.extend(t)
+        counter += 1
+        if counter > 255:
+            raise ValueError("Cannot expand to more than 255 * hash_len bytes")
+    
+    return bytes(output[:length])
