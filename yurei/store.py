@@ -21,6 +21,11 @@ class KVStore:
         self.path = path
         if path:
             self._conn = sqlite3.connect(path, check_same_thread=False)
+            # performance improvements for sqlite
+            self._conn.execute("PRAGMA journal_mode=WAL")
+            self._conn.execute("PRAGMA synchronous=NORMAL")
+            self._conn.execute("PRAGMA cache_size=-64000")  # 64MB cache
+            self._conn.execute("PRAGMA temp_store=MEMORY")
             self._init_table()
         else:
             self._data: Dict[str, str] = {}
@@ -36,6 +41,7 @@ class KVStore:
             )
             """
         )
+        # index already implicit via PRIMARY KEY
         self._conn.commit()
 
     def set(self, key: str, value: Dict) -> None:
@@ -46,7 +52,7 @@ class KVStore:
             key (str): The key to store.
             value (Dict): The value to store, JSON-serializable.
         """
-        payload = json.dumps(value, separators=(",", ":"))
+        payload = json.dumps(value, separators=(",", ":"), ensure_ascii=False)
         if self.path:
             cur = self._conn.cursor()
             cur.execute(
@@ -90,3 +96,35 @@ class KVStore:
             self._conn.commit()
         else:
             self._data.pop(key, None)
+    
+    def exists(self, key: str) -> bool:
+        """
+        Check if a key exists without retrieving its value.
+
+        Args:
+            key (str): The key to check.
+
+        Returns:
+            bool: True if key exists, False otherwise.
+        """
+        if self.path:
+            cur = self._conn.cursor()
+            cur.execute("SELECT 1 FROM kv WHERE key=? LIMIT 1", (key,))
+            return cur.fetchone() is not None
+        else:
+            return key in self._data
+    
+    def __enter__(self):
+        """Context manager support."""
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Close connection on context exit."""
+        if self.path and hasattr(self, '_conn'):
+            self._conn.close()
+        return False
+    
+    def close(self) -> None:
+        """Explicitly close the database connection."""
+        if self.path and hasattr(self, '_conn'):
+            self._conn.close()
