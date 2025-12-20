@@ -10,6 +10,8 @@ DEFAULT_ITERS = 200_000
 SALT_LEN      = 16
 DK_LEN        = 32
 
+# cached padding to avoid recalculation
+_B64_PADDING = "=="
 
 def hash_password(password: str, iterations: int = DEFAULT_ITERS) -> str:
     """
@@ -23,8 +25,12 @@ def hash_password(password: str, iterations: int = DEFAULT_ITERS) -> str:
         str: Encoded hash string in the format:
              pbkdf2$<iterations>$<salt_b64>$<hash_b64>
     """
+    if iterations < 100_000:
+        raise ValueError("iterations must be >= 100,000 for security")
+    
     salt = os.urandom(SALT_LEN)
-    dk = pbkdf2_sha256(password.encode("utf-8"), salt, iterations, DK_LEN)
+    pwd_bytes = password.encode("utf-8")
+    dk = pbkdf2_sha256(pwd_bytes, salt, iterations, DK_LEN)
 
     salt_b64 = base64.urlsafe_b64encode(salt).decode("ascii").rstrip("=")
     dk_b64 = base64.urlsafe_b64encode(dk).decode("ascii").rstrip("=")
@@ -49,13 +55,24 @@ def verify_password(stored: str, attempt: str) -> bool:
             return False
 
         iterations = int(parts[1])
-        salt = base64.urlsafe_b64decode(parts[2] + "==")
-        expected_dk = base64.urlsafe_b64decode(parts[3] + "==")
+        
+        # validate reasonable iteration range
+        if iterations < 10_000 or iterations > 10_000_000:
+            return False
+        
+        # decode with efficient padding
+        salt = base64.urlsafe_b64decode(parts[2] + _B64_PADDING)
+        expected_dk = base64.urlsafe_b64decode(parts[3] + _B64_PADDING)
+        
+        # validate expected lengths
+        if len(salt) != SALT_LEN or len(expected_dk) != DK_LEN:
+            return False
 
+        attempt_bytes = attempt.encode("utf-8")
         attempt_dk = pbkdf2_sha256(
-            attempt.encode("utf-8"), salt, iterations, len(expected_dk)
+            attempt_bytes, salt, iterations, len(expected_dk)
         )
 
         return hmac.compare_digest(attempt_dk, expected_dk)
-    except Exception:
+    except (ValueError, TypeError, UnicodeDecodeError):
         return False
