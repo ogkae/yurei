@@ -1,11 +1,16 @@
 <div align="center">
+    
 
-# yurei
-**Zero-dependency Python cryptography library**
+<!--
+<h1 align="center">
+$${\color{#9b87f5}y}{\color{#8b7ae5}u}{\color{#7b6dd5}r}{\color{#6b60c5}e}{\color{#5b53b5}i}$$
+</h1>
+-->
 
-[![Version](https://img.shields.io/badge/version-2.1.0-5d5d5d?style=flat-square&logo=python)](https://github.com/ogkae/yurei) [![Python](https://img.shields.io/badge/python-3.10+-5d5d5d?style=flat-square&logo=python)](https://www.python.org) [![License](https://img.shields.io/badge/license-MIT-5d5d5d?style=flat-square)](./LICENSE) [![Stars](https://img.shields.io/github/stars/ogkae/yurei?style=flat-square&color=5d5d5d)](https://github.com/ogkae/yurei/stargazers)
+<img width="460" height="353" alt="banner" src="https://github.com/user-attachments/assets/52608723-a5d8-472e-9990-903f8772948c" /> 
 
-*Lightweight cryptographic primitives for modern Python applications*
+| *Lightweight cryptographic primitives for modern Python applications* <br></br> [![Version](https://img.shields.io/badge/version-2.1.0-9b87f5?style=for-the-badge&logo=python)](https://github.com/ogkae/yurei) [![Python](https://img.shields.io/badge/python-3.10+-9b87f5?style=for-the-badge&logo=python)](https://www.python.org) [![License](https://img.shields.io/badge/license-MIT-9b87f5?style=for-the-badge)](./LICENSE) [![Stars](https://img.shields.io/github/stars/ogkae/yurei?style=for-the-badge&color=9b87f5)](https://github.com/ogkae/yurei/stargazers) |
+|:----:|
 
 </div>
 
@@ -17,61 +22,119 @@
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [API Reference](#api-reference)
-- [Security](#security)
-- [Examples](#examples)
+  - [uid - Identifier Generation](#uid---identifier-generation)
+  - [auth - Password Hashing](#auth---password-hashing)
+  - [session - Token Management](#session---token-management)
+  - [cipher - Encryption](#cipher---encryption)
+  - [store - Key-Value Storage](#store---key-value-storage)
+  - [obfusc - XOR Obfuscation](#obfusc---xor-obfuscation)
+- [Security Considerations](#security-considerations)
 - [Contributing](#contributing)
+- [Licence](#licence)
 
 ---
 
 ## Overview
 
-Yurei provides cryptographic utilities without external dependencies. Designed for prototyping, internal tools, and environments with restricted package installation.
+Yurei provides **cryptographic utilities without external dependencies**, built entirely on Python's standard library. Designed for **rapid prototyping**, **internal tooling**, and **environments with restricted package installation**.
+
+<details>
+<summary><b>Quick Example</b></summary>
 
 ```python
 from yurei import encrypt_bytes, create_token, hash_password
 
-encrypted = encrypt_bytes(b"secret", b"password")
-token = create_token({"user": "alice"}, b"key", ttl_seconds=3600)
+# - encrypt sensitive data
+encrypted = encrypt_bytes(b"confidential", b"passphrase")
+
+# - generate signed tokens with expiration
+token = create_token({"user": "alice"}, b"secret", ttl_seconds=3600)
+
+# - hash passwords securely
 pwd_hash = hash_password("SecurePass123")
 ```
 
-> **Note:** For production systems, prefer audited libraries like [`cryptography`](https://cryptography.io/) with AES-GCM or ChaCha20-Poly1305.
+</details>
+
+> [!WARNING]
+> **For production systems**, prefer audited cryptographic libraries such as [`cryptography`](https://cryptography.io/) with [`AES-GCM`](https://datatracker.ietf.org/doc/html/rfc5288) or [`ChaCha20-Poly1305`](https://datatracker.ietf.org/doc/html/rfc7539). Yurei is optimised for development and internal use cases.
 
 ### Architecture
 
 ```mermaid
-graph LR
-    A[Application] --> B[yurei]
+graph TB
+    A[Application Layer] --> B[yurei Core API]
     B --> C[uid<br/>Identifiers]
     B --> D[auth<br/>Passwords]
     B --> E[session<br/>Tokens]
     B --> F[cipher<br/>Encryption]
-    B --> G[store<br/>Storage]
+    B --> G[store<br/>Persistence]
     B --> H[obfusc<br/>XOR]
+    
+    style B fill:#9b87f5,stroke:#7b6dd5,color:#fff
+    style C fill:#1e1e2e,stroke:#9b87f5,color:#fff
+    style D fill:#1e1e2e,stroke:#9b87f5,color:#fff
+    style E fill:#1e1e2e,stroke:#9b87f5,color:#fff
+    style F fill:#1e1e2e,stroke:#9b87f5,color:#fff
+    style G fill:#1e1e2e,stroke:#9b87f5,color:#fff
+    style H fill:#1e1e2e,stroke:#9b87f5,color:#fff
 ```
 
-### Features
+### Core Modules
 
-| Module | Purpose | Algorithms |
-|--------|---------|------------|
-| **uid** | UUID4, deterministic IDs, short tokens | SHA256, CSPRNG |
-| **auth** | Password hashing | PBKDF2-HMAC-SHA256 (200k iter) |
+| <code>Module</code> | <code>Purpose</code> | <code>Implementation</code> |
+|:------:|:--------|:---------------|
+| **uid** | Unique identifier generation | SHA256, CSPRNG |
+| **auth** | Password hashing with salts | PBKDF2-HMAC-SHA256 (200k iterations) |
 | **session** | Signed tokens with expiration | HMAC-SHA256 |
-| **cipher** | Authenticated encryption + parallel mode | HMAC-based stream |
-| **store** | Key-value storage (memory/SQLite) | WAL mode, JSON |
-| **obfusc** | XOR obfuscation (non-cryptographic) | XOR + Base64 |
+| **cipher** | Authenticated encryption | HMAC-based stream cipher |
+| **store** | Key-value persistence | SQLite WAL mode, JSON serialisation |
+| **obfusc** | XOR obfuscation | XOR + Base64 encoding |
+
+```diff
++ Ideal For
++ Rapid prototyping and MVPs
++ Internal tooling and automation scripts
++ Educational projects and cryptography learning
++ Environments with strict dependency constraints
+
+- Not Suitable For
+- Production systems handling sensitive data
+- Compliance-regulated applications (PCI-DSS, HIPAA, GDPR)
+- High-security environments requiring formal audits
+- Applications requiring cryptographic certifications
+```
 
 ---
 
 ## Installation
 
-```bash
-git clone https://github.com/ogkae/yurei
-cd yurei
-pip install -e .
+```ini
+[Requirements]
+python_version = 3.10+
+dependencies   = none (stdlib only)
 ```
 
-**Requirements:** Python 3.10+
+```bash
+$ git clone https://github.com/ogkae/yurei
+$ cd yurei
+$ pip install -e .
+```
+
+<details>
+<summary><b><code>Alternative Installation Methods</code></b></summary>
+
+**From Source**
+```bash
+$ python setup.py install
+```
+
+**Development Mode with Testing Tools**
+```bash
+$ pip install -e ".[dev]"
+```
+
+</details>
 
 ---
 
@@ -86,140 +149,438 @@ from yurei import (
 )
 import os
 
-# Generate IDs
+# - generate unique identifiers
 user_id = uuid4()
+print(f"User ID: {user_id}")
 
-# Hash & verify passwords
+# - hash and verify passwords
 pwd_hash = hash_password("SecurePass123")
 is_valid = verify_password(pwd_hash, "SecurePass123")
+print(f"Password valid: {is_valid}")
 
-# Create & verify tokens
+# - create and verify signed tokens
 secret = os.urandom(32)
-token = create_token({"uid": user_id}, secret, ttl_seconds=3600)
+token = create_token(
+    {"uid": user_id, "role": "admin"}, 
+    secret, 
+    ttl_seconds=3600
+)
 payload = verify_token(token, secret)
+print(f"Token payload: {payload}")
 
-# Encrypt & decrypt
-encrypted = encrypt_bytes(b"data", b"passphrase")
-decrypted = decrypt_bytes(encrypted, b"passphrase")
+# - encrypt and decrypt data
+encrypted = encrypt_bytes(b"sensitive data", b"strong-passphrase")
+decrypted = decrypt_bytes(encrypted, b"strong-passphrase")
+print(f"Decrypted: {decrypted.decode()}")
 
-# Store data
-db = KVStore("data.db")
-db.set("key", {"value": "data"})
-data = db.get("key")
+# - persistent key-value storage
+with KVStore("data.db") as db:
+    db.set("user:session", {"uid": user_id, "active": True})
+    session = db.get("user:session")
+    print(f"Session: {session}")
 ```
 
 ---
 
 ## API Reference
 
-<details>
-<summary><code>uid</code> - Identifier Generation</summary>
+### uid - Identifier Generation
+
+Secure generation of unique identifiers for various use cases.
 
 ```python
-uuid4() -> str                                          # Random UUID4
-is_uuid4(s: str) -> bool                                # Validate UUID4
-sha256_id(namespace: str, name: str, salt: str) -> str  # Deterministic ID (64 hex)
-short_id(length: int = 12) -> str                       # URL-safe token
+from yurei import uuid4, is_uuid4, sha256_id, short_id
+
+# - generate cryptographically secure UUID4
+user_id = uuid4()
+# Returns: "550e8400-e29b-41d4-a716-446655440000"
+
+# - validate UUID4 format
+is_valid = is_uuid4(user_id)
+# Returns: True
+
+# - create deterministic SHA256-based identifier
+doc_id = sha256_id("documents", "invoice-2024", salt="secret")
+# Returns: 64-character hexadecimal string
+
+# - generate short URL-safe token
+token = short_id(length=12)
+# Returns: "aB3xK9mP2nQ1"
+```
+
+<details>
+<summary><b><code>Technical Specifications</code></b></summary>
+
+```ini
+[UUID4]
+source      = os.urandom (system CSPRNG)
+format      = RFC 4122 compliant
+entropy     = 122 bits
+
+[SHA256 ID]
+algorithm   = SHA256
+input       = concatenated arguments + optional salt
+output      = 64-character hex string (256 bits)
+
+[Short ID]
+charset     = alphanumeric (a-z, A-Z, 0-9)
+length      = configurable (default: 12)
+entropy     = ~71 bits (length=12)
 ```
 
 </details>
 
-<details>
-<summary><code>auth</code> - Password Hashing</summary>
-
-```python
-hash_password(password: str, iterations: int = 200_000) -> str
-# Returns: pbkdf2$<iterations>$<salt_b64>$<hash_b64>
-
-verify_password(stored: str, attempt: str) -> bool
-# Constant-time comparison
+```diff
++ Cryptographically secure random generation
++ Deterministic reproducibility (SHA256-based IDs)
++ Customisable token lengths
++ URL-safe character sets
 ```
-
-**Parameters:**
-- 200k iterations (default)
-- 16-byte salt
-- 32-byte derived key
-
-</details>
-
-<details>
-<summary><code>session</code> - Token Management</summary>
-
-```python
-create_token(payload: Dict[str, str], secret: bytes, ttl_seconds: int) -> str
-# Format: <payload_b64>.<signature_b64>
-
-verify_token(token: str, secret: bytes) -> Optional[Dict[str, str]]
-# Returns payload if valid, None otherwise
-```
-
-**Features:**
-- HMAC-SHA256 signature
-- Automatic expiration
-- Lightweight (not JWT-compatible)
-
-</details>
-
-<details>
-<summary><code>cipher</code> - Encryption</summary>
-
-```python
-encrypt_bytes(plaintext: bytes, key: bytes) -> str
-# Key: passphrase (any length) or raw 32-byte key
-# Returns: base64url(salt + nonce + ciphertext + mac)
-
-decrypt_bytes(blob_b64: str, key: bytes) -> bytes
-# Raises ValueError on MAC mismatch
-
-encrypt_parallel(plaintext: bytes, key: bytes, chunk_size: int, workers: int) -> str
-decrypt_parallel(blob_b64: str, key: bytes, workers: int) -> bytes
-# Use for files >10MB (4x speedup on quad-core)
-```
-
-**Security:**
-- Encrypt-then-MAC construction
-- Per-chunk + global MAC (parallel mode)
-- 12-byte random nonce
-
-</details>
-
-<details>
-<summary><code>store</code> - Key-Value Storage</summary>
-
-```python
-class KVStore:
-    def __init__(self, path: Optional[str] = None)  # None = in-memory
-    def set(self, key: str, value: Dict) -> None
-    def get(self, key: str) -> Optional[Dict]
-    def exists(self, key: str) -> bool
-    def delete(self, key: str) -> None
-    def close(self) -> None
-```
-
-**Features:**
-- SQLite WAL mode
-- Context manager support
-- JSON serialization
-
-</details>
-
-<details>
-<summary><code>obfusc</code> - XOR Obfuscation</summary>
-
-```python
-xor_obfuscate(s: str, key: Union[str, bytes]) -> str
-xor_deobfuscate(s_enc: str, key: Union[str, bytes]) -> str
-```
-
-> **Warning:** XOR obfuscation is NOT encryption. Use only for deterring casual inspection.
-
-</details>
 
 ---
 
-## Security
+### auth - Password Hashing
 
-### Cryptographic Stack
+Industry-standard password hashing with automatic salt generation.
+
+```python
+from yurei import hash_password, verify_password
+
+# - hash a password
+pwd_hash = hash_password("SecurePass123", iterations=200_000)
+# Returns: "pbkdf2$200000$<salt_b64>$<hash_b64>"
+
+# - verify password against hash
+is_valid = verify_password(pwd_hash, "SecurePass123")
+# Returns: True
+
+is_valid = verify_password(pwd_hash, "WrongPassword")
+# Returns: False
+```
+
+<details>
+<summary><b><code>Security Features</code></b></summary>
+
+```ini
+[Algorithm]
+kdf            = PBKDF2-HMAC-SHA256
+iterations     = 200,000 (default, configurable)
+salt_length    = 16 bytes (128 bits)
+output_length  = 32 bytes (256 bits)
+
+[Protection]
+timing_attacks = constant-time comparison (hmac.compare_digest)
+rainbow_tables = random salt per password
+dictionary     = high iteration count
+```
+
+</details>
+
+```diff
++ Constant-time comparison (prevents timing attacks)
++ Random salts (prevents rainbow table attacks)
++ Configurable iterations (future-proof against hardware advances)
++ Standard PBKDF2-HMAC-SHA256 (widely audited)
+```
+
+---
+
+### session - Token Management
+
+Generate and verify signed tokens with automatic expiration handling.
+
+```python
+from yurei import create_token, verify_token
+import os
+
+secret = os.urandom(32)
+
+# - create signed token with payload
+token = create_token( 
+    payload={"uid": "user123", "role": "admin"},
+    secret=secret,
+    ttl_seconds=3600  # 1 hour expiration
+)
+# Returns: "<payload_b64>.<signature_b64>"
+
+# - verify and extract payload
+payload = verify_token(token, secret)
+# Returns: {"uid": "user123", "role": "admin"}
+# Returns: None if invalid or expired
+```
+
+<details>
+<summary><b><code>Token Format Specification</code></b></summary>
+
+**Structure:**
+```
+<base64url(json_payload)>.<base64url(hmac_signature)>
+```
+
+**Example:**
+```
+eyJ1aWQiOiJ1c2VyMTIzIiwiZXhwIjoxNzM1MDAwMDAwfQ.a8f3KmN9pQ2xR5tY7uI1oP3sK6vL4wM
+```
+
+**Payload Contents:**
+```json
+{
+  "uid": "user123",
+  "role": "admin",
+  "exp": 1735000000  // Unix timestamp (automatically added)
+}
+```
+
+```ini
+[Signature]
+algorithm    = HMAC-SHA256
+input        = base64url(json_payload)
+output       = 32 bytes, base64url encoded
+verification = constant-time comparison
+```
+
+</details>
+
+```diff
++ HMAC-SHA256 signature verification
++ Automatic expiration handling
++ JSON payload serialisation
++ URL-safe base64 encoding
+```
+
+---
+
+### cipher - Encryption
+
+Authenticated encryption with support for parallel processing of large files.
+
+#### Basic Encryption
+
+```python
+from yurei import encrypt_bytes, decrypt_bytes
+
+plaintext = b"Sensitive information"
+key = b"my-secure-passphrase"  # (any length accepted)
+
+# - encrypt data
+encrypted = encrypt_bytes(plaintext, key)
+# Returns: base64url(salt + nonce + ciphertext + mac)
+
+# - decrypt data
+decrypted = decrypt_bytes(encrypted, key)
+# Returns: b"Sensitive information"
+# Raises: ValueError if MAC verification fails
+```
+
+#### Parallel Encryption
+
+For large files, parallel processing significantly improves performance.
+
+```python
+from yurei import encrypt_parallel, decrypt_parallel
+
+# - read large file
+with open("large_file.bin", "rb") as f:
+    plaintext = f.read()
+
+# - encrypt using multiple workers
+encrypted = encrypt_parallel(
+    plaintext=plaintext,
+    key=b"my-secure-key",
+    chunk_size=1024*1024,  # 1 MB chunks
+    workers=4              # CPU cores to utilise
+)
+
+# - decrypt using parallel processing
+decrypted = decrypt_parallel(
+    encrypted, 
+    key=b"my-secure-key", 
+    workers=4
+)
+```
+
+```mermaid
+graph TB
+    EB[Encrypted Blob] --> S[Salt<br/>16 bytes<br/>PBKDF2 input]
+    EB --> N[Nonce<br/>12 bytes<br/>Stream cipher IV]
+    EB --> C[Ciphertext<br/>Variable length<br/>Encrypted data]
+    EB --> M[MAC Tag<br/>32 bytes<br/>HMAC-SHA256]
+
+    style EB fill:#9b87f5,stroke:#7b6dd5,color:#fff
+    style S fill:#1e1e2e,stroke:#9b87f5,color:#fff
+    style N fill:#1e1e2e,stroke:#9b87f5,color:#fff
+    style C fill:#1e1e2e,stroke:#9b87f5,color:#fff
+    style M fill:#1e1e2e,stroke:#9b87f5,color:#fff
+```
+
+```ini
+[Key Derivation]
+stage_1    = PBKDF2-HMAC-SHA256 (100k iterations)
+stage_2    = HKDF-SHA256 (key expansion)
+salt       = 16 bytes random (per encryption)
+output     = 64 bytes (encryption key + MAC key)
+
+[Encryption]
+scheme     = HMAC-based PRF stream cipher
+mode       = Encrypt-then-MAC
+nonce      = 12 bytes random (per encryption)
+block_size = 64 bytes
+
+[Authentication]
+mac        = HMAC-SHA256
+input      = salt + nonce + ciphertext
+output     = 32 bytes
+verification = constant-time comparison
+```
+
+```diff
++ Authenticated encryption (Encrypt-then-MAC)
++ Parallel processing support (large files)
++ Random salt and nonce per encryption
++ Constant-time MAC verification
++ Key derivation from arbitrary-length passphrases
+
+- Custom stream cipher (not AES-GCM/ChaCha20-Poly1305)
+- No formal security audit
+- Not suitable for high-security environments
+```
+
+---
+
+### store - Key-Value Storage
+
+Simple persistent storage with SQLite backend or in-memory operation.
+
+```python
+from yurei import KVStore
+
+# - inmemory storage (no persistence)
+db = KVStore()
+
+# - SQLite-backed storage (persisted to disk)
+db = KVStore("data.db")
+
+# - store data (automatic JSON serialisation)
+db.set("user:123", {"name": "Alice", "email": "alice@example.com"})
+
+# - retrieve data
+user = db.get("user:123")
+# Returns: {"name": "Alice", "email": "alice@example.com"}
+
+missing = db.get("user:999")
+# Returns: None
+
+# - check existence
+exists = db.exists("user:123")
+# Returns: True
+
+# - delete data
+db.delete("user:123")
+
+# - context manager (automatic cleanup)
+with KVStore("data.db") as db:
+    db.set("key", {"value": "data"})
+    # Automatically closed after block
+```
+
+<details>
+<summary><b><code>Storage Backend Details</code></b></summary>
+
+```ini
+[SQLite Configuration]
+journal_mode = WAL (Write-Ahead Logging)
+synchronous  = NORMAL
+temp_store   = MEMORY
+
+[Schema]
+table     = kv_store
+columns   = key TEXT PRIMARY KEY, value TEXT
+index     = PRIMARY KEY on key
+encoding  = JSON serialisation
+
+[Operations]
+get       = O(log n) with B-tree index
+set       = O(log n) with WAL buffering
+delete    = O(log n)
+exists    = O(log n)
+```
+
+</details>
+
+```diff
++ Automatic JSON serialisation/deserialisation
++ SQLite WAL mode (concurrent reads)
++ In-memory mode available (no I/O overhead)
++ Context manager support (automatic cleanup)
+```
+
+---
+
+### obfusc - XOR Obfuscation
+
+> [!WARNING]
+> **Not cryptographically secure.** XOR obfuscation provides **zero protection** against determined attackers. Use only for non-security purposes.
+
+```python
+from yurei import xor_obfuscate, xor_deobfuscate
+
+original = "Sensitive text"
+key = "secret-key"
+
+# - obfuscate string
+obfuscated = xor_obfuscate(original, key)
+# Returns: base64-encoded XOR result
+
+# - deobfuscate string
+restored = xor_deobfuscate(obfuscated, key)
+# Returns: "Sensitive text"
+```
+
+<details>
+<summary><b><code>Technical Details</code></b></summary>
+
+```ini
+[Algorithm]
+operation = XOR (bitwise exclusive OR)
+key       = repeating key stream
+encoding  = base64 (output encoding)
+
+[Security]
+strength       = none (trivially reversible)
+key_secrecy    = does not provide confidentiality
+integrity      = no authentication/tampering detection
+```
+
+**How It Works:**
+```
+plaintext:  "HELLO"
+key:        "KEY" (repeating)
+XOR result: [binary data]
+output:     base64(XOR result)
+```
+
+</details>
+
+```diff
++ Appropriate Use Cases
++ Deterring casual inspection of configuration files
++ Obfuscating hardcoded strings in source code
++ Basic data mangling for non-security purposes
++ Lightweight encoding/decoding without dependencies
+
+- Inappropriate Use Cases
+- Protecting passwords or credentials
+- Encrypting sensitive personal data
+- Authentication tokens or session identifiers
+- Any security-critical application
+- Protection against skilled attackers
+```
+
+---
+
+## Security Considerations
+
+### Cryptographic Architecture
 
 ```mermaid
 graph TB
@@ -227,152 +588,164 @@ graph TB
     B --> C[Key Derivation<br/>PBKDF2 + HKDF]
     B --> D[Authentication<br/>HMAC-SHA256]
     B --> E[Encryption<br/>Stream Cipher]
-    C --> F[hashlib/hmac<br/>Python stdlib]
+    C --> F[Python stdlib<br/>hashlib + hmac]
     D --> F
     E --> F
+    
+    style B fill:#9b87f5,stroke:#7b6dd5,color:#fff
+    style C fill:#1e1e2e,stroke:#9b87f5,color:#fff
+    style D fill:#1e1e2e,stroke:#9b87f5,color:#fff
+    style E fill:#1e1e2e,stroke:#9b87f5,color:#fff
+    style F fill:#2a2a3e,stroke:#9b87f5,color:#fff
 ```
 
-### Specifications
+### Cryptographic Primitives
 
-| Component | Algorithm | Parameters |
-|-----------|-----------|------------|
-| Password KDF | PBKDF2-HMAC-SHA256 | 200k iterations, 16B salt, 32B output |
-| Encryption KDF | PBKDF2 + HKDF | 100k iterations |
-| MAC | HMAC-SHA256 | 32B output, constant-time verify |
-| Cipher | HMAC-based PRF stream | 12B nonce, encrypt-then-MAC |
-| CSPRNG | `os.urandom` | System entropy source |
+| Component | Algorithm | Parameters | Standard |
+|:----------|:----------|:-----------|:---------|
+| **Password KDF** | PBKDF2-HMAC-SHA256 | 200k iterations, 16B salt, 32B output | NIST SP 800-132 |
+| **Encryption KDF** | PBKDF2 + HKDF | 100k iterations, key expansion | NIST SP 800-108 |
+| **MAC** | HMAC-SHA256 | 32B output, constant-time verify | FIPS 198-1 |
+| **Cipher** | HMAC-based PRF stream | 12B nonce, Encrypt-then-MAC | Custom design |
+| **CSPRNG** | `os.urandom` | System entropy source | Platform-dependent |
 
-### Limitations
+<details>
+<summary><b><code>Security Strengths</code></b></summary>
 
-- HMAC-based cipher instead of AES-GCM/ChaCha20-Poly1305
-- No hardware acceleration (AES-NI)
-- PBKDF2 vulnerable to GPU attacks (prefer Argon2id)
-- Not audited for production use
-
-### Best Practices
-
-| DO | DON'T |
-|----|-------|
-| Store secrets in environment variables | Hardcode secrets in source code |
-| Use 32+ byte secrets | Use weak/short keys |
-| Hash passwords before storage | Store plaintext passwords |
-| Use `encrypt_parallel()` for large files | Use single-threaded for >10MB files |
-| Derive separate keys per context | Reuse keys across different purposes |
-
-```python
-# Secure key management
-import os
-SECRET = os.environ["APP_SECRET_KEY"].encode()
-if len(SECRET) < 32:
-    raise ValueError("Secret must be ≥32 bytes")
+```diff
++ Uses well-established primitives (PBKDF2, HMAC, SHA256)
++ Constant-time comparison for MAC/password verification
++ Random salts and nonces prevent replay attacks
++ High iteration counts resist brute-force attacks
++ Encrypt-then-MAC construction (recommended pattern)
++ No external dependencies (reduced supply chain risk)
 ```
 
----
+</details>
 
-## Examples
+<details>
+<summary><b><code>Security Limitations</code></b></summary>
 
-### Complete Authentication System
-
-```python
-from yurei import uuid4, hash_password, verify_password, create_token, verify_token, KVStore
-import os
-
-class Auth:
-    def __init__(self):
-        self.db = KVStore("users.db")
-        self.secret = os.urandom(32)
-    
-    def register(self, username: str, password: str) -> str:
-        user_id = uuid4()
-        self.db.set(user_id, {
-            "username": username,
-            "password": hash_password(password)
-        })
-        return user_id
-    
-    def login(self, user_id: str, password: str) -> str | None:
-        user = self.db.get(user_id)
-        if user and verify_password(user["password"], password):
-            return create_token(
-                {"uid": user_id, "username": user["username"]},
-                self.secret,
-                ttl_seconds=86400
-            )
-        return None
-    
-    def verify(self, token: str) -> dict | None:
-        return verify_token(token, self.secret)
-
-# Usage
-auth = Auth()
-uid = auth.register("alice", "SecurePass123")
-token = auth.login(uid, "SecurePass123")
-session = auth.verify(token)
+```diff
+- Custom stream cipher (not AES-GCM or ChaCha20-Poly1305)
+- No formal security audit or peer review
+- No side-channel attack analysis
+- Limited cryptanalysis compared to standard algorithms
+- Not suitable for compliance-regulated environments
+- Cannot guarantee security against nation-state adversaries
 ```
 
-### Encrypted File Vault
+</details>
 
-```python
-from yurei import encrypt_bytes, decrypt_bytes, sha256_id
-import os
+### Recommended Usage Guidelines
 
-class Vault:
-    def __init__(self, vault_dir: str):
-        self.vault_dir = vault_dir
-        self.key = os.urandom(32)
-        os.makedirs(vault_dir, exist_ok=True)
-    
-    def store(self, filename: str, data: bytes) -> str:
-        file_id = sha256_id("vault", filename)
-        encrypted = encrypt_bytes(data, self.key)
-        
-        with open(f"{self.vault_dir}/{file_id}.enc", "w") as f:
-            f.write(encrypted)
-        return file_id
-    
-    def retrieve(self, file_id: str) -> bytes:
-        with open(f"{self.vault_dir}/{file_id}.enc") as f:
-            return decrypt_bytes(f.read(), self.key)
+```diff
++ Acceptable Use Cases
++ Internal development tools and scripts
++ Prototyping and proof-of-concept applications
++ Educational projects and learning exercises
++ Non-critical automation tasks
++ Environments where standard libraries cannot be installed
 
-# Usage
-vault = Vault("./secure")
-file_id = vault.store("secret.txt", b"Confidential data")
-data = vault.retrieve(file_id)
+- Unacceptable Use Cases
+- Production systems with sensitive user data
+- Financial transactions or payment processing
+- Healthcare records (HIPAA compliance required)
+- Payment card data (PCI-DSS compliance required)
+- Government or military applications
+- Legal document management systems
 ```
 
-### Performance
+### Alternative Solutions
 
-| Operation | Time | Configuration |
-|-----------|------|---------------|
-| `hash_password()` | ~200ms | 200k iterations |
-| `encrypt_bytes(1MB)` | ~150ms | Single-threaded |
-| `encrypt_parallel(50MB)` | ~1.2s | 4 workers |
-| `KVStore.set()` | ~1ms | SQLite WAL mode |
+For production environments, consider these audited alternatives:
+
+| <code>Library</code> | <code>Algorithm</code> | <code>Use Case</code> |
+|:--------|:----------|:---------|
+| [`cryptography`](https://cryptography.io/) | AES-GCM, ChaCha20-Poly1305 | General-purpose encryption |
+| [`bcrypt`](https://github.com/pyca/bcrypt/) | bcrypt | Password hashing |
+| [`PyNaCl`](https://pynacl.readthedocs.io/) | NaCl/libsodium | High-level cryptography API |
+| [`argon2-cffi`](https://github.com/hynek/argon2-cffi) | Argon2 | Modern password hashing |
 
 ---
 
 ## Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+**Contributions are welcome!** Please review the [CONTRIBUTING.md](./CONTRIBUTING.md) guidelines before submitting.
 
-**Priority areas:** Test suite, benchmarks, streaming API, key rotation
+### Priority Development Areas
+
+| <code>Area</code> | <code>Description</code> | <code>Skills Required</code> |
+|:-----|:------------|:----------------|
+| **Test Coverage** | Comprehensive unit and integration tests | Python, pytest, hypothesis |
+| **Benchmarking** | Performance profiling and optimisation | Python profiling tools, cProfile |
+| **Streaming API** | Memory-efficient chunked encryption | Python generators, async/await |
+| **Key Rotation** | Graceful cryptographic key migration | Cryptography, design patterns |
+| **Documentation** | API reference, tutorials, examples | Technical writing, Markdown |
+
+### Development Setup
+
+```bash
+# - clone repository
+git clone https://github.com/ogkae/yurei
+cd yurei
+
+# - install development dependencies
+pip install -e ".[dev]"
+
+# - run test suite
+pytest tests/ -v
+
+# - run linter
+ruff check .
+
+# - format code
+black .
+
+# - type checking
+mypy yurei/
+```
+
+<details>
+<summary><b><code>Contribution Workflow</code></b></summary>
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+**Code Standards:**
+- Follow PEP 8 style guidelines
+- Add type hints for all public functions
+- Write docstrings for all modules, classes, and functions
+- Include unit tests for new functionality
+- Update documentation as needed
+
+</details>
 
 ---
 
-## License
-
-MIT License - see [LICENSE](./LICENSE)
-
-Also distributed under the [Toaster License 2025](./TOASTER-LICENSE)
-
----
+## Licence
 
 <div align="center">
 
+### Licensed under the [MIT Licence](./LICENSE)
+
+(Also distributed under the [Toaster Licence 2025](./TOASTER-LICENSE))
+
+---
+
+### Contributors
+
 [![Contributors](https://contrib.rocks/image?repo=ogkae/yurei)](https://github.com/ogkae/yurei/graphs/contributors)
 
-Made by [ogkae](https://github.com/ogkae)
+**Created by [ogkae](https://github.com/ogkae)**
 
-**[↑ Back to Top](#yurei)**
+[![Discord](https://img.shields.io/badge/Discord-000000?style=for-the-badge&logo=discord)](https://discord.com/users/1394747147106254949)
+[![GitHub](https://img.shields.io/badge/hexaʰ-000000?style=for-the-badge&logo=github)](https://github.com/hexa-hosting)
+[![Bento](https://img.shields.io/badge/Bento-000000?style=for-the-badge&logo=bento)](https://bento.me/ogkae)
+
+**[↑ Back to Top](#Table-of-Contents)**
 
 </div>
