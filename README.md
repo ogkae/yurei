@@ -7,7 +7,7 @@ $${\color{#9b87f5}y}{\color{#8b7ae5}u}{\color{#7b6dd5}r}{\color{#6b60c5}e}{\colo
 </h1>
 -->
 
-<img width="460" height="353" alt="banner" src="https://github.com/user-attachments/assets/52608723-a5d8-472e-9990-903f8772948c" /> 
+<a href="https://github.com/ogkae/yurei/fork"><img width="460" height="353" alt="banner" src="https://github.com/user-attachments/assets/52608723-a5d8-472e-9990-903f8772948c"/></a> 
 
 | *Lightweight cryptographic primitives for modern Python applications* <br></br> [![Version](https://img.shields.io/badge/version-2.1.0-9b87f5?style=for-the-badge&logo=python)](https://github.com/ogkae/yurei) [![Python](https://img.shields.io/badge/python-3.10+-9b87f5?style=for-the-badge&logo=python)](https://www.python.org) [![License](https://img.shields.io/badge/license-MIT-9b87f5?style=for-the-badge)](./LICENSE) [![Stars](https://img.shields.io/github/stars/ogkae/yurei?style=for-the-badge&color=9b87f5)](https://github.com/ogkae/yurei/stargazers) |
 |:----:|
@@ -749,3 +749,4 @@ mypy yurei/
 **[↑ Back to Top](#Table-of-Contents)**
 
 </div>
+
