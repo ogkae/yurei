@@ -22,7 +22,6 @@ from typing import Dict, Optional
 import hashlib
 import hmac
 
-
 def create_token(
     payload: Dict[str, str],
     secret: bytes,
@@ -160,3 +159,4 @@ def verify_token(token: str, secret: bytes) -> Optional[Dict[str, str]]:
         
     except (ValueError, TypeError, UnicodeDecodeError):
         return None # any error during processing = invalid token
+
