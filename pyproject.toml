@@ -1,18 +1,18 @@
 [project]
-name = "yurei"
-version = "2.1.0"
-description = "Modular Python package for secure ID generation, password hashing, session tokens, encryption, storage, and obfuscation."
-authors = [
-    {name = "ogcae", email = "c.ogcae@engineer.com"}
-]
-readme = "README.md"
-requires-python = ">=3.10"
-license = "MIT"
-keywords = ["security", "encryption", "hashing", "UUID", "tokens", "obfuscation"]
 
+name = 'yurei'
+version = '1.4.0'
+description = 'Python toolkit for encryption, authentication, secure IDs, and lightweight storage.'
+authors = [
+  { name = 'ogkae', email = 'danimedinaduran24888@gmail.com' },
+]
+readme = 'README.md'
+requires-python = '>=3.10'
+license = 'MIT'
+keywords = ['security', 'encryption', 'hashing', 'UUID', 'tokens', 'obfuscation']
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "Operating System :: OS Independent",
-    "Topic :: Security :: Cryptography",
-    "Topic :: Software Development :: Libraries"
+  'Programming Language :: Python :: 3',
+  'Operating System :: OS Independent',
+  'Topic :: Security :: Cryptography',
+  'Topic :: Software Development :: Libraries',
 ]
