@@ -1,44 +1,45 @@
-"""internal helper functions for cryptographic operations
+"""Internal helper functions for cryptographic operations
 
-provides low-level utilities used across yurei modules:
-- time utilities (millisecond timestamps)
-- encoding utilities (hex, base64url)
-- constant-time comparison (timing attack prevention)
-- key derivation (pbkdf2, hkdf)
+Provides low-level utilities used across yurei modules:
+- Time utilities (millisecond timestamps)
+- Encoding utilities (hex, base64url)
+- Constant-time comparison (timing attack prevention)
+- Key derivation (PBKDF2, HKDF)
 """
 
-from typing import Tuple
+from typing import Final
 import hashlib
 import base64
 import time
 import hmac
-import os
 
-_BASE64_PADDING = "=" # cached padding string to avoid string concatenation overhead
+_BASE64_PADDING: Final[str] = "="
+_HMAC_DIGEST_SIZE: Final[int] = 32  # SHA256 output size
+_MAX_HKDF_LENGTH: Final[int] = 255 * _HMAC_DIGEST_SIZE  # RFC 5869 limit
 
 def now_millis() -> int:
-    """return current unix timestamp in milliseconds
+    """Return current Unix timestamp in milliseconds.
     
-    returns:
-        int: milliseconds since epoch (jan 1, 1970)
+    Returns:
+        int: Milliseconds since epoch (Jan 1, 1970 UTC).
         
-    example:
+    Example:
         >>> ts = now_millis()
-        >>> print(f"current time: {ts}ms")
+        >>> print(f"Current time: {ts}ms")
     """
     return int(time.time() * 1000)
 
 
 def to_hex(b: bytes) -> str:
-    """convert bytes to lowercase hexadecimal string
+    """Convert bytes to lowercase hexadecimal string.
     
-    args:
-        b (bytes): raw bytes to convert
+    Args:
+        b: Raw bytes to convert.
         
-    returns:
-        str: hexadecimal representation
+    Returns:
+        Hexadecimal representation.
         
-    example:
+    Example:
         >>> to_hex(b"\\x00\\xff")
         '00ff'
     """
@@ -46,18 +47,18 @@ def to_hex(b: bytes) -> str:
 
 
 def b64u_encode(b: bytes) -> str:
-    """encode bytes to url-safe base64 without padding
+    """Encode bytes to URL-safe base64 without padding.
     
-    url-safe variant uses '-' and '_' instead of '+' and '/'
-    padding ('=') is removed to make urls cleaner
+    URL-safe variant uses '-' and '_' instead of '+' and '/'.
+    Padding ('=') is removed for cleaner URLs.
     
-    args:
-        b (bytes): raw bytes to encode
+    Args:
+        b: Raw bytes to encode.
         
-    returns:
-        str: base64url string without padding
+    Returns:
+        Base64url string without padding.
         
-    example:
+    Example:
         >>> b64u_encode(b"hello")
         'aGVsbG8'
     """
@@ -65,49 +66,47 @@ def b64u_encode(b: bytes) -> str:
 
 
 def b64u_decode(s: str) -> bytes:
-    """decode url-safe base64 string back to bytes
+    """Decode URL-safe base64 string back to bytes.
     
-    automatically adds required padding if missing
+    Automatically adds required padding if missing.
     
-    args:
-        s (str): base64url encoded string
+    Args:
+        s: Base64url encoded string.
         
-    returns:
-        bytes: decoded raw bytes
+    Returns:
+        Decoded raw bytes.
         
-    raises:
-        binascii.Error: if input is not valid base64
+    Raises:
+        binascii.Error: If input is not valid base64.
         
-    example:
+    Example:
         >>> b64u_decode('aGVsbG8')
         b'hello'
     """
-    
-    padding_needed = (4 - len(s) % 4) % 4 
+    padding_needed = (4 - len(s) % 4) % 4
     if padding_needed:
-        s = s + (_BASE64_PADDING * padding_needed)
+        s += _BASE64_PADDING * padding_needed
     return base64.urlsafe_b64decode(s)
 
 
 def constant_time_eq(a: bytes, b: bytes) -> bool:
-    """compare two byte strings in constant time
+    """Compare two byte strings in constant time.
     
-    prevents timing attacks by ensuring comparison
-    always takes the same time regardless of where
-    the first difference occurs
+    Prevents timing attacks by ensuring comparison always takes
+    the same time regardless of where the first difference occurs.
     
-    args:
-        a (bytes): first byte string
-        b (bytes): second byte string
+    Args:
+        a: First byte string.
+        b: Second byte string.
         
-    returns:
-        bool: true if equal, false otherwise
+    Returns:
+        True if equal, False otherwise.
         
-    note:
-        uses hmac.compare_digest which is designed to
-        prevent timing analysis attacks
+    Note:
+        Uses hmac.compare_digest which is designed to prevent
+        timing analysis attacks.
         
-    example:
+    Example:
         >>> constant_time_eq(b"secret", b"secret")
         True
         >>> constant_time_eq(b"secret", b"public")
@@ -117,30 +116,34 @@ def constant_time_eq(a: bytes, b: bytes) -> bool:
 
 
 def pbkdf2_sha256(
-    password: bytes, salt: bytes, iterations: int, dklen: int
+    password: bytes, 
+    salt: bytes, 
+    iterations: int, 
+    dklen: int
 ) -> bytes:
-    """derive cryptographic key from password using pbkdf2-hmac-sha256
+    """Derive cryptographic key from password using PBKDF2-HMAC-SHA256.
     
-    pbkdf2 (password-based key derivation function 2) applies
-    a pseudorandom function to the password along with a salt
-    value and repeats the process many times to produce a
-    derived key, which helps defend against brute-force attacks
+    PBKDF2 (Password-Based Key Derivation Function 2) applies a
+    pseudorandom function to the password along with a salt value
+    and repeats the process many times to produce a derived key,
+    which helps defend against brute-force attacks.
     
-    args:
-        password (bytes): password to derive key from
-        salt (bytes): cryptographic salt (should be unique per password)
-        iterations (int): number of iterations (higher = slower = more secure)
-        dklen (int): desired length of derived key in bytes
+    Args:
+        password: Password to derive key from.
+        salt: Cryptographic salt (should be unique per password).
+        iterations: Number of iterations (higher = slower = more secure).
+        dklen: Desired length of derived key in bytes.
         
-    returns:
-        bytes: derived key of specified length
+    Returns:
+        Derived key of specified length.
         
-    security:
-        - minimum 100,000 iterations recommended (yurei uses 200,000)
-        - salt should be at least 16 bytes random data
-        - use unique salt per password
+    Security:
+        - Minimum 100,000 iterations recommended (yurei uses 200,000)
+        - Salt should be at least 16 bytes random data
+        - Use unique salt per password
         
-    example:
+    Example:
+        >>> import os
         >>> salt = os.urandom(16)
         >>> key = pbkdf2_sha256(b"password", salt, 200_000, 32)
         >>> len(key)
@@ -149,34 +152,59 @@ def pbkdf2_sha256(
     return hashlib.pbkdf2_hmac("sha256", password, salt, iterations, dklen=dklen)
 
 
+def hkdf_extract(salt: bytes, ikm: bytes) -> bytes:
+    """HKDF extract step using HMAC-SHA256.
+    
+    Extracts a fixed-length pseudorandom key from input keying material.
+    Part of the HKDF (HMAC-based Key Derivation Function) from RFC 5869.
+    
+    Args:
+        salt: Optional salt value (use empty bytes if not needed).
+        ikm: Input keying material.
+        
+    Returns:
+        Pseudorandom key of fixed length (32 bytes for SHA256).
+        
+    Example:
+        >>> prk = hkdf_extract(b"", b"input_key_material")
+        >>> len(prk)
+        32
+    """
+    return hmac.new(salt, ikm, hashlib.sha256).digest()
+
+
 def hkdf_expand(prk: bytes, info: bytes, length: int) -> bytes:
-    """hkdf expand step using hmac-sha256
+    """HKDF expand step using HMAC-SHA256.
     
-    hkdf (hmac-based key derivation function) expand takes a
-    pseudorandom key and expands it to the desired length
+    Expands a pseudorandom key to the desired length using optional
+    context/application-specific info.
     
-    args:
-        prk (bytes): pseudorandom key from extract step
-        info (bytes): optional context/application specific info
-        length (int): desired output length in bytes
+    Args:
+        prk: Pseudorandom key from extract step.
+        info: Optional context/application specific info.
+        length: Desired output length in bytes.
         
-    returns:
-        bytes: expanded key material
+    Returns:
+        Expanded key material.
         
-    raises:
-        ValueError: if length exceeds 255 * 32 bytes (sha256 limit)
+    Raises:
+        ValueError: If length exceeds RFC 5869 limit (255 * 32 bytes).
         
-    note:
-        part of hkdf (rfc 5869) key derivation function
+    Note:
+        Part of HKDF (RFC 5869) key derivation function.
         
-    example:
-        >>> prk = os.urandom(32)  # from hkdf extract
+    Example:
+        >>> import os
+        >>> prk = os.urandom(32)
         >>> okm = hkdf_expand(prk, b"app-context", 64)
         >>> len(okm)
         64
     """
     if length <= 0:
         return b""
+    
+    if length > _MAX_HKDF_LENGTH:
+        raise ValueError(f"Cannot expand to more than {_MAX_HKDF_LENGTH} bytes")
     
     output = bytearray()
     t = b""
@@ -186,8 +214,30 @@ def hkdf_expand(prk: bytes, info: bytes, length: int) -> bytes:
         t = hmac.new(prk, t + info + bytes([counter]), hashlib.sha256).digest()
         output.extend(t)
         counter += 1
-        if counter > 255:
-            raise ValueError("cannot expand to more than 255 * hash_len bytes")
     
-    return bytes(output[:length])7
-    # ~7/8
+    return bytes(output[:length])
+
+
+def secure_zero(data: bytearray) -> None:
+    """Securely zero out sensitive data in memory.
+    
+    Overwrites memory with zeros to prevent sensitive data from
+    lingering in memory after use.
+    
+    Args:
+        data: Bytearray to zero out (modified in-place).
+        
+    Note:
+        This provides basic memory clearing but does not guarantee
+        complete protection against all memory access techniques.
+        For high-security applications, consider using specialized
+        memory protection libraries.
+        
+    Example:
+        >>> sensitive = bytearray(b"password")
+        >>> secure_zero(sensitive)
+        >>> sensitive
+        bytearray(b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00')
+    """
+    for i in range(len(data)):
+        data[i] = 0
