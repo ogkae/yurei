@@ -1,284 +1,317 @@
-"""secure identifier and token generation
+"""Secure identifier and token generation
 
-provides various id generation methods:
-- uuid4: random universally unique identifiers
-- sha256_id: deterministic namespace-based ids
-- short_id: url-safe random tokens
-- hmac_id: keyed deterministic ids
+Provides various ID generation methods:
+- uuid4: Random universally unique identifiers
+- sha256_id: Deterministic namespace-based IDs
+- short_id: URL-safe random tokens
+- hmac_id: Keyed deterministic IDs
 
-security note:
-    prefer python stdlib `uuid`, `secrets`, `hashlib` for csprng and hashing.
-    for encryption/authenticated encryption use audited libraries (aes-gcm / chacha20-poly1305).
+Security note:
+    All random generation uses cryptographically secure sources.
+    For production use, consider Python stdlib uuid, secrets, hashlib.
 """
 
-from typing import Optional, Union
-from .helpers import to_hex
+from typing import Final, Optional
 import secrets
 import hashlib
-import uuid
 import hmac
-import re
 import os
+import re
 
-ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+ALPHABET: Final[str] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+_UUID_VERSION_MASK: Final[int] = 0x0F
+_UUID_VERSION_SHIFT: Final[int] = 4
+_UUID_VARIANT_MASK: Final[int] = 0x3F
+_UUID_VARIANT_VALUE: Final[int] = 0x80
 
-_UUID4_RE = re.compile(
+_UUID4_PATTERN = re.compile(
     r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
-    re.I,
+    re.IGNORECASE,
 )
 
 def uuid4() -> str:
-    """generate a random uuid version 4
+    """Generate a random UUID version 4.
     
-    creates a 128-bit universally unique identifier with
-    cryptographically random bits (version 4 variant)
+    Creates a 128-bit universally unique identifier with
+    cryptographically random bits (version 4 variant).
     
-    returns:
-        str: uuid4 string in canonical format (8-4-4-4-12)
+    Returns:
+        UUID4 string in canonical format (8-4-4-4-12).
         
-    example:
+    Example:
         >>> uid = uuid4()
         >>> print(uid)
         'f47ac10b-58cc-4372-a567-0e02b2c3d479'
         >>> is_uuid4(uid)
         True
         
-    note:
-        this is a manual implementation. for production use,
-        consider using stdlib uuid.uuid4() directly
+    Note:
+        Uses os.urandom for cryptographic randomness.
     """
-    r = bytearray(os.urandom(16))
-    r[6] = (r[6] & 0x0F) | (4 << 4) # set version bits (4 = random uuid)
-    r[8] = (r[8] & 0x3F) | 0x80     # set variant bits (10 = rfc 4122)
-    h = to_hex(bytes(r))
-    return f"{h[0:8]}-{h[8:12]}-{h[12:16]}-{h[16:20]}-{h[20:32]}"
+    random_bytes = bytearray(os.urandom(16))
+    
+    
+    random_bytes[6] = (random_bytes[6] & _UUID_VERSION_MASK) | (4 << _UUID_VERSION_SHIFT) # Set version bits (4 = random UUID)
+    random_bytes[8] = (random_bytes[8] & _UUID_VARIANT_MASK) | _UUID_VARIANT_VALUE        # Set variant bits (10 = RFC 4122)
+    
+    hex_str = random_bytes.hex() # Format as UUID string
+    return f"{hex_str[0:8]}-{hex_str[8:12]}-{hex_str[12:16]}-{hex_str[16:20]}-{hex_str[20:32]}"
 
 
 def is_uuid4(s: str) -> bool:
-    """validate if string matches uuid4 format
+    """Validate if string matches UUID4 format.
     
-    checks if string conforms to uuid version 4 pattern:
+    Checks if string conforms to UUID version 4 pattern:
     - 8 hex chars
     - 4 hex chars
     - '4' + 3 hex chars (version field)
     - [89ab] + 3 hex chars (variant field)
     - 12 hex chars
     
-    args:
-        s (str): string to validate
+    Args:
+        s: String to validate.
         
-    returns:
-        bool: true if valid uuid4 format, false otherwise
+    Returns:
+        True if valid UUID4 format, False otherwise.
         
-    example:
+    Example:
         >>> is_uuid4('f47ac10b-58cc-4372-a567-0e02b2c3d479')
         True
         >>> is_uuid4('not-a-uuid')
         False
     """
-    return bool(_UUID4_RE.fullmatch(s))
+    if not isinstance(s, str):
+        return False
+    return bool(_UUID4_PATTERN.fullmatch(s))
 
 
-def sha256_id(
-    namespace: Optional[str],
-    name: str,
-    salt: Optional[str] = None
-) -> str:
-    """generate deterministic identifier using sha256
+def sha256_id(namespace: str, name: str, salt: Optional[str] = None) -> str:
+    """Generate deterministic identifier using SHA256.
     
-    creates a reproducible 64-character hex id by hashing
-    namespace, name, and optional salt together
+    Creates a reproducible 64-character hex ID by hashing
+    namespace, name, and optional salt together.
     
-    args:
-        namespace (str, optional): namespace string (e.g., 'users', 'files')
-        name (str): primary identifier within namespace
-        salt (str, optional): additional entropy/context
+    Args:
+        namespace: Namespace string (e.g., 'users', 'files').
+        name: Primary identifier within namespace.
+        salt: Optional additional entropy/context.
         
-    returns:
-        str: 64-character lowercase hex string (sha256 hash)
+    Returns:
+        64-character lowercase hex string (SHA256 hash).
         
-    example:
+    Example:
         >>> sha256_id('users', 'alice@example.com')
         'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3'
-        >>> sha256_id('users', 'alice@example.com')  # deterministic
+        >>> # Deterministic - same inputs produce same output
+        >>> sha256_id('users', 'alice@example.com')
         'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3'
         
-    use cases:
-        - consistent ids across distributed systems
-        - idempotent operations
-        - content-addressable storage
+    Use cases:
+        - Consistent IDs across distributed systems
+        - Idempotent operations
+        - Content-addressable storage
     """
-    parts = []
-    if namespace:
-        parts.append(namespace)
-    parts.append(name)
+    parts = [namespace, name]
     if salt:
         parts.append(salt)
+    
     data = ":".join(parts).encode("utf-8")
     return hashlib.sha256(data).hexdigest()
 
 
 def short_id(length: int = 12) -> str:
-    """generate random url-safe short identifier
+    """Generate random URL-safe short identifier.
     
-    creates cryptographically random token using csprng
-    (cryptographically secure pseudorandom number generator)
+    Creates cryptographically random token using CSPRNG
+    (cryptographically secure pseudorandom number generator).
     
-    args:
-        length (int): desired length (default: 12)
+    Args:
+        length: Desired length (default: 12).
         
-    returns:
-        str: random alphanumeric string
+    Returns:
+        Random alphanumeric string.
         
-    example:
+    Raises:
+        ValueError: If length < 1 or length > 128.
+        
+    Example:
         >>> token = short_id(16)
         >>> len(token)
         16
         >>> token.isalnum()
         True
         
-    security:
-        - uses secrets.choice (csprng)
-        - suitable for tokens, nonces, session ids
+    Security:
+        - Uses secrets.choice (CSPRNG)
+        - Suitable for tokens, nonces, session IDs
         - 12 chars provides ~71 bits of entropy
     """
+    if length < 1:
+        raise ValueError("Length must be at least 1")
+    if length > 128:
+        raise ValueError("Length must be at most 128")
+    
     return "".join(secrets.choice(ALPHABET) for _ in range(length))
-
-
-def uuid4_std() -> str:
-    """generate uuid4 using python standard library
-    
-    recommended: use stdlib uuid.uuid4() for security-sensitive contexts
-    
-    returns:
-        str: uuid4 string in canonical format
-        
-    example:
-        >>> uid = uuid4_std()
-        >>> is_uuid4(uid)
-        True
-        
-    note:
-        this wraps uuid.uuid4() for consistency with yurei api
-    """
-    return str(uuid.uuid4())
-
-
-def uuid5_from_namespace(
-    namespace_uuid: Union[str, uuid.UUID],
-    name: str
-) -> str:
-    """create name-based uuid5 from namespace and name
-    
-    generates deterministic uuid using sha1 hash of
-    namespace uuid + name (rfc 4122)
-    
-    args:
-        namespace_uuid: uuid instance or string (e.g., uuid.NAMESPACE_DNS)
-        name: name within the namespace
-        
-    returns:
-        str: uuid5 string
-        
-    example:
-        >>> uuid5_from_namespace(uuid.NAMESPACE_DNS, 'example.com')
-        'cfbff0d1-9375-5685-968c-48ce8b15ae17'
-        
-    use cases:
-        - deterministic uuids for dns names
-        - reproducible identifiers from urls
-    """
-    ns = uuid.UUID(str(namespace_uuid)) if not isinstance(namespace_uuid, uuid.UUID) else namespace_uuid
-    return str(uuid.uuid5(ns, name))
-
-
-def secure_short_id(bytes_len: int = 16) -> str:
-    """generate high-entropy url-safe token
-    
-    produces base64-url-safe token without padding
-    good for tokens exposed to users
-    
-    args:
-        bytes_len (int): number of random bytes (default: 16)
-        
-    returns:
-        str: url-safe token (length ~= bytes_len * 4/3)
-        
-    example:
-        >>> token = secure_short_id(24)
-        >>> len(token)  # approximately 32 characters
-        32
-        
-    use cases:
-        - confirmation tokens
-        - password reset links
-        - api keys
-        - nonces
-        
-    security:
-        - uses secrets.token_urlsafe (csprng)
-        - 16 bytes provides 128 bits of entropy
-    """
-    return secrets.token_urlsafe(bytes_len).rstrip("=")
 
 
 def hmac_id(
     key: bytes,
-    namespace: Optional[str],
+    namespace: str,
     name: str,
-    hex_out: bool = True
-) -> Union[str, bytes]:
-    """generate keyed deterministic identifier using hmac
+    hex_output: bool = True
+) -> str:
+    """Generate keyed deterministic identifier using HMAC.
     
-    creates reproducible id authenticated with secret key
-    useful for canonicalizing names under a secret
+    Creates reproducible ID authenticated with secret key.
+    Useful for canonicalizing names under a secret.
     
-    args:
-        key (bytes): secret key (store in kms or env var)
-        namespace (str, optional): optional namespace string
-        name (str): input name
-        hex_out (bool): return hex digest (true) or raw bytes (false)
+    Args:
+        key: Secret key (store in KMS or env var).
+        namespace: Namespace string.
+        name: Input name.
+        hex_output: Return hex digest (True) or base64 (False).
         
-    returns:
-        str or bytes: hmac digest as hex string or raw bytes
+    Returns:
+        HMAC digest as hex string or base64.
         
-    example:
+    Raises:
+        ValueError: If key is empty.
+        
+    Example:
         >>> secret = os.urandom(32)
         >>> hmac_id(secret, 'users', 'alice')
         'a7b2c3d4e5f6...'
         
-    security:
-        - requires secret key unknown to users
-        - prevents id prediction without key
-        - suitable for secure tokens
+    Security:
+        - Requires secret key unknown to users
+        - Prevents ID prediction without key
+        - Suitable for secure tokens
         
-    use cases:
-        - signed identifiers
-        - tamper-evident ids
-        - authenticated references
+    Use cases:
+        - Signed identifiers
+        - Tamper-evident IDs
+        - Authenticated references
     """
-    parts = []
-    if namespace:
-        parts.append(namespace)
-    parts.append(name)
-    data = ":".join(parts).encode("utf-8")
+    if not key:
+        raise ValueError("Key cannot be empty")
+    
+    data = f"{namespace}:{name}".encode("utf-8")
     mac = hmac.new(key, data, hashlib.sha256).digest()
-    return mac.hex() if hex_out else mac
+    
+    if hex_output:
+        return mac.hex()
+    else:
+        import base64
+        return base64.urlsafe_b64encode(mac).decode("ascii").rstrip("=")
 
 
-def id_from_bytes(b: bytes) -> str:
-    """convert raw bytes to hexadecimal identifier
+def secure_token(bytes_length: int = 32) -> str:
+    """Generate high-entropy URL-safe token.
     
-    utility function for creating deterministic hex ids from bytes
+    Produces base64-url-safe token without padding.
+    Good for tokens exposed to users.
     
-    args:
-        b (bytes): raw bytes
+    Args:
+        bytes_length: Number of random bytes (default: 32).
         
-    returns:
-        str: lowercase hexadecimal string
+    Returns:
+        URL-safe token (length ~= bytes_length * 4/3).
         
-    example:
-        >>> id_from_bytes(b"\\x01\\x02\\x03")
-        '010203'
+    Raises:
+        ValueError: If bytes_length < 1 or bytes_length > 256.
+        
+    Example:
+        >>> token = secure_token(24)
+        >>> len(token) >= 30  # Approximately 32 characters
+        True
+        
+    Use cases:
+        - Confirmation tokens
+        - Password reset links
+        - API keys
+        - Nonces
+        
+    Security:
+        - Uses secrets.token_urlsafe (CSPRNG)
+        - 32 bytes provides 256 bits of entropy
     """
-    return to_hex(b)
+    if bytes_length < 1:
+        raise ValueError("Bytes length must be at least 1")
+    if bytes_length > 256:
+        raise ValueError("Bytes length must be at most 256")
+    
+    return secrets.token_urlsafe(bytes_length).rstrip("=")
+
+
+def nanoid(length: int = 21, alphabet: Optional[str] = None) -> str:
+    """Generate NanoID-style identifier.
+    
+    Creates compact, URL-safe, unique identifier similar to NanoID.
+    Default uses base62 alphabet (A-Za-z0-9) with 21 characters.
+    
+    Args:
+        length: Desired length (default: 21).
+        alphabet: Optional custom alphabet (default: base62).
+        
+    Returns:
+        Random identifier string.
+        
+    Example:
+        >>> uid = nanoid()
+        >>> len(uid)
+        21
+        >>> nanoid(10, alphabet="0123456789")
+        '4819273650'
+    """
+    if alphabet is None:
+        alphabet = ALPHABET
+    
+    if length < 1 or length > 128:
+        raise ValueError("Length must be between 1 and 128")
+    
+    if not alphabet:
+        raise ValueError("Alphabet cannot be empty")
+    
+    return "".join(secrets.choice(alphabet) for _ in range(length))
+
+
+def ulid() -> str:
+    """Generate ULID (Universally Unique Lexicographically Sortable Identifier).
+    
+    ULIDs are 128-bit identifiers that are:
+    - Lexicographically sortable
+    - Canonically encoded as 26 character string
+    - URL-safe (case insensitive)
+    - Monotonic sort order (when generated in same millisecond)
+    
+    Returns:
+        26-character ULID string.
+        
+    Example:
+        >>> uid = ulid()
+        >>> len(uid)
+        26
+        
+    Note:
+        This is a simplified implementation. For production use,
+        consider using a dedicated ULID library.
+    """
+    import time
+    
+    alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ" # Crockford's base32 alphabet (excludes I, L, O, U)
+
+    timestamp_ms = int(time.time() * 1000) # Timestamp component (48 bits)
+    random_bytes = os.urandom(10)          # Random component (80 bits)
+    
+    timestamp_part = "" # Encode timestamp (10 characters)
+    for _ in range(10):
+        timestamp_part = alphabet[timestamp_ms & 0x1F] + timestamp_part
+        timestamp_ms >>= 5
+
+    random_int = int.from_bytes(random_bytes, "big") # Encode random (16 characters)
+    random_part = ""
+    for _ in range(16):
+        random_part = alphabet[random_int & 0x1F] + random_part
+        random_int >>= 5
+    
+    return timestamp_part + random_part
