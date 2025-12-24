@@ -18,20 +18,21 @@ $${\color{#9b87f5}y}{\color{#8b7ae5}u}{\color{#7b6dd5}r}{\color{#6b60c5}e}{\colo
 
 ## Table of Contents
 
+- [**Table of contents**](#table-of-contents)
 - [Overview](#overview)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [What's New in v1.4.1](#whats-new-in-v141)
-- [API Reference](#api-reference)
-  - [uid - Identifier Generation](#uid---identifier-generation)
-  - [auth - Password Hashing](#auth---password-hashing)
-  - [session - Token Management](#session---token-management)
-  - [cipher - Encryption](#cipher---encryption)
-  - [store - Key-Value Storage](#store---key-value-storage)
-  - [obfusc - XOR Obfuscation](#obfusc---xor-obfuscation)
+- [API Reference:](#api-reference)
+  - [`uid` - Identifier Generation](#uid---identifier-generation)
+  - [`auth` - Password Hashing](#auth---password-hashing)
+  - [`session` - Token Management](#session---token-management)
+  - [`cipher` - Encryption](#cipher---encryption)
+  - [`store` - Key-Value Storage](#store---key-value-storage)
+  - [`obfusc` - XOR Obfuscation](#obfusc---xor-obfuscation)
 - [Security Considerations](#security-considerations)
 - [Contributing](#contributing)
-- [Licence](#licence)
+<!-- - [Licence](#licence) (already exist)-->
 
 ---
 
@@ -45,13 +46,13 @@ Yurei provides **cryptographic utilities without external dependencies**, built 
 ```python
 from yurei import encrypt_bytes, create_token, hash_password
 
-# - encrypt sensitive data
+# - encrypt sensitive data -
 encrypted = encrypt_bytes(b"confidential", b"passphrase")
 
-# - generate signed tokens with expiration
+# - generate signed tokens with expiration -
 token = create_token({"user": "alice"}, b"secret", ttl_seconds=3600)
 
-# - hash passwords securely
+# - hash passwords securely -
 pwd_hash = hash_password("SecurePass123")
 ```
 
@@ -150,16 +151,16 @@ from yurei import (
 )
 import os
 
-# - generate unique identifiers
+# - generate unique identifiers -
 user_id = uuid4()
 print(f"User ID: {user_id}")
 
-# - hash and verify passwords
+# - hash and verify passwords -
 pwd_hash = hash_password("SecurePass123")
 is_valid = verify_password(pwd_hash, "SecurePass123")
 print(f"Password valid: {is_valid}")
 
-# - create and verify signed tokens
+# - create and verify signed tokens -
 secret = os.urandom(32)
 token = create_token(
     {"uid": user_id, "role": "admin"}, 
@@ -169,12 +170,12 @@ token = create_token(
 payload = verify_token(token, secret)
 print(f"Token payload: {payload}")
 
-# - encrypt and decrypt data
+# - encrypt and decrypt data -
 encrypted = encrypt_bytes(b"sensitive data", b"strong-passphrase")
 decrypted = decrypt_bytes(encrypted, b"strong-passphrase")
 print(f"Decrypted: {decrypted.decode()}")
 
-# - persistent key-value storage
+# - persistent key-value storage -
 with KVStore("data.db") as db:
     db.set("user:session", {"uid": user_id, "active": True})
     session = db.get("user:session")
@@ -227,7 +228,7 @@ graph LR
 ```
 
 <details>
-  <summary><b><code>Click here to see all</code></b></summary>
+  <summary><b><code>Full Changes</code></b></summary>
 
 #### Identifier Generation
 
@@ -254,7 +255,6 @@ graph LR
 **Memory safety** introduces `secure_zero()` for wiping sensitive data from memory, and `hkdf_extract()` exposes the HKDF extract step for advanced key derivation workflows.
 
 </details>
-
 
 ---
 
@@ -371,7 +371,7 @@ import os
 
 secret = os.urandom(32)
 
-# - create signed token with payload
+# - create signed token with payload -
 token = create_token( 
     payload={"uid": "user123", "role": "admin"},
     secret=secret,
@@ -379,7 +379,7 @@ token = create_token(
 )
 # Returns: "<payload_b64>.<signature_b64>"
 
-# - verify and extract payload
+# - verify and extract payload -
 payload = verify_token(token, secret)
 # Returns: {"uid": "user123", "role": "admin"}
 # Returns: None if invalid or expired
@@ -438,11 +438,11 @@ from yurei import encrypt_bytes, decrypt_bytes
 plaintext = b"Sensitive information"
 key = b"my-secure-passphrase"  # (any length accepted)
 
-# - encrypt data
+# - encrypt data -
 encrypted = encrypt_bytes(plaintext, key)
 # Returns: base64url(salt + nonce + ciphertext + mac)
 
-# - decrypt data
+# - decrypt data -
 decrypted = decrypt_bytes(encrypted, key)
 # Returns: b"Sensitive information"
 # Raises: ValueError if MAC verification fails
@@ -455,11 +455,11 @@ For large files, parallel processing significantly improves performance.
 ```python
 from yurei import encrypt_parallel, decrypt_parallel
 
-# - read large file
+# - read large file -
 with open("large_file.bin", "rb") as f:
     plaintext = f.read()
 
-# - encrypt using multiple workers
+# - encrypt using multiple workers -
 encrypted = encrypt_parallel(
     plaintext=plaintext,
     key=b"my-secure-key",
@@ -467,7 +467,7 @@ encrypted = encrypt_parallel(
     workers=4              # CPU cores to utilise
 )
 
-# - decrypt using parallel processing
+# - decrypt using parallel processing -
 decrypted = decrypt_parallel(
     encrypted, 
     key=b"my-secure-key", 
@@ -530,30 +530,30 @@ Simple persistent storage with SQLite backend or in-memory operation.
 ```python
 from yurei import KVStore
 
-# - inmemory storage (no persistence)
+# - inmemory storage (no persistence) -
 db = KVStore()
 
-# - SQLite-backed storage (persisted to disk)
+# - SQLite-backed storage (persisted to disk) -
 db = KVStore("data.db")
 
-# - store data (automatic JSON serialisation)
+# - store data (automatic JSON serialisation) -
 db.set("user:123", {"name": "Alice", "email": "alice@example.com"})
 
-# - retrieve data
+# - retrieve data -
 user = db.get("user:123")
 # Returns: {"name": "Alice", "email": "alice@example.com"}
 
 missing = db.get("user:999")
 # Returns: None
 
-# - check existence
+# - check existence -
 exists = db.exists("user:123")
 # Returns: True
 
-# - delete data
+# - delete data -
 db.delete("user:123")
 
-# - context manager (automatic cleanup)
+# - context manager (automatic cleanup) -
 with KVStore("data.db") as db:
     db.set("key", {"value": "data"})
     # Automatically closed after block
@@ -603,11 +603,11 @@ from yurei import xor_obfuscate, xor_deobfuscate
 original = "Sensitive text"
 key = "secret-key"
 
-# - obfuscate string
+# - obfuscate string -
 obfuscated = xor_obfuscate(original, key)
 # Returns: base64-encoded XOR result
 
-# - deobfuscate string
+# - deobfuscate string -
 restored = xor_deobfuscate(obfuscated, key)
 # Returns: "Sensitive text"
 ```
@@ -743,23 +743,23 @@ For production environments, consider these audited alternatives:
 ### Development Setup
 
 ```bash
-# - clone repository
+# - clone repository -
 git clone https://github.com/ogkae/yurei
 cd yurei
 
-# - install development dependencies
+# - install development dependencies -
 pip install -e ".[dev]"
 
-# - run test suite
+# - run test suite -
 pytest tests/ -v
 
-# - run linter
+# - run linter -
 ruff check .
 
-# - format code
+# - format code -
 black .
 
-# - type checking
+# - type checking -
 mypy yurei/
 ```
 
@@ -783,24 +783,22 @@ mypy yurei/
 
 ---
 
-## Licence
+### Contributors
 
 <div align="center">
 
-### Licensed under the [MIT Licence](./LICENSE)
+|[![Contributors](https://contrib.rocks/image?repo=ogkae/yurei)](https://github.com/ogkae/yurei/graphs/contributors)|
+|-|
 
-<!-- (Also distributed under the [Toaster Licence 2025](./TOASTER-LICENSE))  || 10/10/2025 - 24/12/2025 -->
+<br></br>
 
----
+[`↑ Back to Top`](#table-of-contents)
 
-### Contributors
+<br></br>
 
-[![Contributors](https://contrib.rocks/image?repo=ogkae/yurei)](https://github.com/ogkae/yurei/graphs/contributors)
 
-**[`↑ Back to Top`](#Table-of-Contents)**
-
-| <code>Created by ogkae</code><br></br><a href="https://discord.com/users/1394747147106254949"><img src="https://img.shields.io/badge/Discord-000000?style=for-the-badge&logo=discord"></a><a href="https://github.com/hexa-hosting"><img src="https://img.shields.io/badge/hexaʰ-000000?style=for-the-badge&logo=github"></a><a href="https://bento.me/ogkae"><img src="https://img.shields.io/badge/Bento-000000?style=for-the-badge&logo=bento"></a> |
+| Licensed under the [`MIT Licence`](./LICENSE)<br></br><a href="https://discord.com/users/1394747147106254949"><img src="https://img.shields.io/badge/Discord-000000?style=for-the-badge&logo=discord"></a><a href="https://github.com/hexa-hosting"><img src="https://img.shields.io/badge/hexaʰ-000000?style=for-the-badge&logo=github"></a><a href="https://bento.me/ogkae"><img src="https://img.shields.io/badge/Bento-000000?style=for-the-badge&logo=bento"></a> |
 |:----:|
 
 </div>
-
+<!-- (Also distributed under the [Toaster Licence 2025](./TOASTER-LICENSE))  || 10/10/2025 - 24/12/2025 -->
