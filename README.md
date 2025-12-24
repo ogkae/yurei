@@ -7,7 +7,7 @@ $${\color{#9b87f5}y}{\color{#8b7ae5}u}{\color{#7b6dd5}r}{\color{#6b60c5}e}{\colo
 
 <a href="https://github.com/ogkae/yurei/fork"><img width="460" height="353" alt="banner" src="https://github.com/user-attachments/assets/5dc7c238-f972-4d0e-887a-78eff2492356"/></a> 
 
-|[![Version](https://img.shields.io/badge/version-2.1.0-9b87f5?style=for-the-badge&logo=python)](https://github.com/ogkae/yurei) [![Python](https://img.shields.io/badge/python-3.10+-9b87f5?style=for-the-badge&logo=python)](https://www.python.org) [![License](https://img.shields.io/badge/license-MIT-9b87f5?style=for-the-badge)](./LICENSE) [![Stars](https://img.shields.io/github/stars/ogkae/yurei?style=for-the-badge&color=9b87f5)](https://github.com/ogkae/yurei/stargazers) |
+|[![Version](https://img.shields.io/badge/version-1.4.1-9b87f5?style=for-the-badge&logo=python)](https://github.com/ogkae/yurei) [![Python](https://img.shields.io/badge/python-3.10+-9b87f5?style=for-the-badge&logo=python)](https://www.python.org) [![License](https://img.shields.io/badge/license-MIT-9b87f5?style=for-the-badge)](./LICENSE) [![Stars](https://img.shields.io/github/stars/ogkae/yurei?style=for-the-badge&color=9b87f5)](https://github.com/ogkae/yurei/stargazers) |
 |----|
 
 *Lightweight cryptographic primitives for modern Python applications*
@@ -803,3 +803,4 @@ mypy yurei/
 |:----:|
 
 </div>
+
