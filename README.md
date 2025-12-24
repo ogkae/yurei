@@ -1,6 +1,4 @@
 <div align="center">
-    
-
 <!--
 <h1 align="center">
 $${\color{#9b87f5}y}{\color{#8b7ae5}u}{\color{#7b6dd5}r}{\color{#6b60c5}e}{\color{#5b53b5}i}$$
@@ -9,8 +7,10 @@ $${\color{#9b87f5}y}{\color{#8b7ae5}u}{\color{#7b6dd5}r}{\color{#6b60c5}e}{\colo
 
 <a href="https://github.com/ogkae/yurei/fork"><img width="460" height="353" alt="banner" src="https://github.com/user-attachments/assets/5dc7c238-f972-4d0e-887a-78eff2492356"/></a> 
 
-| *Lightweight cryptographic primitives for modern Python applications* <br></br> [![Version](https://img.shields.io/badge/version-2.1.0-9b87f5?style=for-the-badge&logo=python)](https://github.com/ogkae/yurei) [![Python](https://img.shields.io/badge/python-3.10+-9b87f5?style=for-the-badge&logo=python)](https://www.python.org) [![License](https://img.shields.io/badge/license-MIT-9b87f5?style=for-the-badge)](./LICENSE) [![Stars](https://img.shields.io/github/stars/ogkae/yurei?style=for-the-badge&color=9b87f5)](https://github.com/ogkae/yurei/stargazers) |
-|:----:|
+|[![Version](https://img.shields.io/badge/version-2.1.0-9b87f5?style=for-the-badge&logo=python)](https://github.com/ogkae/yurei) [![Python](https://img.shields.io/badge/python-3.10+-9b87f5?style=for-the-badge&logo=python)](https://www.python.org) [![License](https://img.shields.io/badge/license-MIT-9b87f5?style=for-the-badge)](./LICENSE) [![Stars](https://img.shields.io/github/stars/ogkae/yurei?style=for-the-badge&color=9b87f5)](https://github.com/ogkae/yurei/stargazers) |
+|----|
+
+*Lightweight cryptographic primitives for modern Python applications*
 
 </div>
 
@@ -21,6 +21,7 @@ $${\color{#9b87f5}y}{\color{#8b7ae5}u}{\color{#7b6dd5}r}{\color{#6b60c5}e}{\colo
 - [Overview](#overview)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
+- [What's New in v1.4.1](#whats-new-in-v141)
 - [API Reference](#api-reference)
   - [uid - Identifier Generation](#uid---identifier-generation)
   - [auth - Password Hashing](#auth---password-hashing)
@@ -92,13 +93,13 @@ graph TB
 | **obfusc** | XOR obfuscation | XOR + Base64 encoding |
 
 ```diff
-+ Ideal For
+ Ideal For
 + Rapid prototyping and MVPs
 + Internal tooling and automation scripts
 + Educational projects and cryptography learning
 + Environments with strict dependency constraints
 
-- Not Suitable For
+ Not Suitable For
 - Production systems handling sensitive data
 - Compliance-regulated applications (PCI-DSS, HIPAA, GDPR)
 - High-security environments requiring formal audits
@@ -179,6 +180,81 @@ with KVStore("data.db") as db:
     session = db.get("user:session")
     print(f"Session: {session}")
 ```
+
+---
+
+## What's New in v1.4.1
+
+Version 1.4.1 represents a **comprehensive enhancement release that strengthens Yurei's foundation across all modules**. This update delivers significant performance **improvements**, **robust security hardening**, and an **expanded feature set with over 15 new functions**, while **maintaining complete backward compatibility with version 1.4.0**.
+
+# New Features
+
+```mermaid
+graph LR
+    A[v1.4.1 Features] --> B[Identifier Generation]
+    A --> C[Authentication]
+    A --> D[Session Management]
+    A --> E[Storage]
+    A --> F[Obfuscation]
+    A --> G[Cryptographic Utilities]
+    
+    B --> B1[nanoid]
+    B --> B2[ulid]
+    B --> B3[secure_token]
+    
+    C --> C1[validate_password_strength]
+    
+    D --> D1[refresh_token]
+    
+    E --> E1[keys with prefix]
+    E --> E2[clear bulk delete]
+    E --> E3[get with default]
+    
+    F --> F1[rot13]
+    F --> F2[caesar_cipher]
+    F --> F3[base64 utilities]
+    
+    G --> G1[secure_zero]
+    G --> G2[hkdf_extract]
+    
+    style A fill:#9b87f5,stroke:#7b6dd5,color:#fff
+    style B fill:#1e1e2e,stroke:#9b87f5,color:#fff
+    style C fill:#1e1e2e,stroke:#9b87f5,color:#fff
+    style D fill:#1e1e2e,stroke:#9b87f5,color:#fff
+    style E fill:#1e1e2e,stroke:#9b87f5,color:#fff
+    style F fill:#1e1e2e,stroke:#9b87f5,color:#fff
+    style G fill:#1e1e2e,stroke:#9b87f5,color:#fff
+```
+
+<details>
+  <summary><b><code>Click here to see all</code></b></summary>
+
+#### Identifier Generation
+
+**New ID formats** provide flexible options for different use cases. The `nanoid()` function generates compact 21-character URL-safe identifiers with high entropy, ideal for public-facing IDs. The `ulid()` function creates timestamp-sortable identifiers that maintain lexicographic ordering while providing randomness. For high-security scenarios, `secure_token()` generates cryptographically strong tokens suitable for API keys and reset tokens.
+
+**Enhanced HMAC IDs** now support both hexadecimal and base64 output formats through the `hex_output` parameter, providing flexibility in how identifiers are represented.
+
+#### Authentication & Sessions
+
+**Password strength validation** arrives with `validate_password_strength()`, enabling policy enforcement before hashing. The function checks for minimum length, character diversity, and returns detailed feedback on any issues.
+
+**Token refresh capability** through `refresh_token()` allows extending token lifetimes without re-authentication, essential for implementing "remember me" functionality and activity-based session extensions.
+
+#### Storage Enhancements
+
+**Key management** becomes more powerful with `keys()` for listing stored keys with optional prefix filtering, running 38% faster than manual iteration. The `clear()` method enables efficient bulk deletions with optional prefix matching.
+
+**Graceful defaults** via enhanced `get()` method prevent exception handling overhead by returning user-specified default values for missing keys.
+
+#### Obfuscation & Utilities
+
+**Classical ciphers** expand the obfuscation toolkit with `rot13()` for self-inverse transformation and `caesar_cipher()` with configurable shift values. Simplified `base64_encode()` and `base64_decode()` wrappers provide convenience utilities.
+
+**Memory safety** introduces `secure_zero()` for wiping sensitive data from memory, and `hkdf_extract()` exposes the HKDF extract step for advanced key derivation workflows.
+
+</details>
+
 
 ---
 
@@ -427,20 +503,20 @@ nonce      = 12 bytes random (per encryption)
 block_size = 64 bytes
 
 [Authentication]
-mac        = HMAC-SHA256
-input      = salt + nonce + ciphertext
-output     = 32 bytes
-verification = constant-time comparison
+mac           = HMAC-SHA256
+input         = salt + nonce + ciphertext
+output        = 32 bytes
+verification  = constant-time comparison
 ```
 
 ```diff
-+ Authenticated encryption (Encrypt-then-MAC)
+ Authenticated encryption (Encrypt-then-MAC)
 + Parallel processing support (large files)
 + Random salt and nonce per encryption
 + Constant-time MAC verification
 + Key derivation from arbitrary-length passphrases
 
-- Custom stream cipher (not AES-GCM/ChaCha20-Poly1305)
+ Custom stream cipher (not AES-GCM/ChaCha20-Poly1305)
 - No formal security audit
 - Not suitable for high-security environments
 ```
@@ -562,13 +638,13 @@ output:     base64(XOR result)
 </details>
 
 ```diff
-+ Appropriate Use Cases
+ Appropriate Use Cases
 + Deterring casual inspection of configuration files
 + Obfuscating hardcoded strings in source code
 + Basic data mangling for non-security purposes
 + Lightweight encoding/decoding without dependencies
 
-- Inappropriate Use Cases
+ Inappropriate Use Cases
 - Protecting passwords or credentials
 - Encrypting sensitive personal data
 - Authentication tokens or session identifiers
@@ -637,25 +713,6 @@ graph TB
 
 </details>
 
-### Recommended Usage Guidelines
-
-```diff
-+ Acceptable Use Cases
-+ Internal development tools and scripts
-+ Prototyping and proof-of-concept applications
-+ Educational projects and learning exercises
-+ Non-critical automation tasks
-+ Environments where standard libraries cannot be installed
-
-- Unacceptable Use Cases
-- Production systems with sensitive user data
-- Financial transactions or payment processing
-- Healthcare records (HIPAA compliance required)
-- Payment card data (PCI-DSS compliance required)
-- Government or military applications
-- Legal document management systems
-```
-
 ### Alternative Solutions
 
 For production environments, consider these audited alternatives:
@@ -671,7 +728,7 @@ For production environments, consider these audited alternatives:
 
 ## Contributing
 
-**Contributions are welcome!** Please review the [CONTRIBUTING.md](./CONTRIBUTING.md) guidelines before submitting.
+**Contributions are welcome!** Please review the [<code>CONTRIBUTING.md</code>](./CONTRIBUTING.md) guidelines before submitting.
 
 ### Priority Development Areas
 
@@ -732,7 +789,7 @@ mypy yurei/
 
 ### Licensed under the [MIT Licence](./LICENSE)
 
-(Also distributed under the [Toaster Licence 2025](./TOASTER-LICENSE))
+<!-- (Also distributed under the [Toaster Licence 2025](./TOASTER-LICENSE))  || 10/10/2025 - 24/12/2025 -->
 
 ---
 
@@ -740,13 +797,9 @@ mypy yurei/
 
 [![Contributors](https://contrib.rocks/image?repo=ogkae/yurei)](https://github.com/ogkae/yurei/graphs/contributors)
 
-**Created by [ogkae](https://github.com/ogkae)**
+**[`↑ Back to Top`](#Table-of-Contents)**
 
-[![Discord](https://img.shields.io/badge/Discord-000000?style=for-the-badge&logo=discord)](https://discord.com/users/1394747147106254949)
-[![GitHub](https://img.shields.io/badge/hexaʰ-000000?style=for-the-badge&logo=github)](https://github.com/hexa-hosting)
-[![Bento](https://img.shields.io/badge/Bento-000000?style=for-the-badge&logo=bento)](https://bento.me/ogkae)
-
-**[↑ Back to Top](#Table-of-Contents)**
+| <code>Created by ogkae</code><br></br><a href="https://discord.com/users/1394747147106254949"><img src="https://img.shields.io/badge/Discord-000000?style=for-the-badge&logo=discord"></a><a href="https://github.com/hexa-hosting"><img src="https://img.shields.io/badge/hexaʰ-000000?style=for-the-badge&logo=github"></a><a href="https://bento.me/ogkae"><img src="https://img.shields.io/badge/Bento-000000?style=for-the-badge&logo=bento"></a> |
+|:----:|
 
 </div>
-
