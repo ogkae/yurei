@@ -4,7 +4,6 @@
 $${\color{#9b87f5}y}{\color{#8b7ae5}u}{\color{#7b6dd5}r}{\color{#6b60c5}e}{\color{#5b53b5}i}$$
 </h1>
 -->
-
 <a href="https://github.com/ogkae/yurei/fork"><img width="460" height="353" alt="banner" src="https://github.com/user-attachments/assets/5dc7c238-f972-4d0e-887a-78eff2492356"/></a> 
 
 |[![Version](https://img.shields.io/badge/version-1.4.1-9b87f5?style=for-the-badge&logo=python)](https://github.com/ogkae/yurei) [![Python](https://img.shields.io/badge/python-3.10+-9b87f5?style=for-the-badge&logo=python)](https://www.python.org) [![License](https://img.shields.io/badge/license-MIT-9b87f5?style=for-the-badge)](./LICENSE) [![Stars](https://img.shields.io/github/stars/ogkae/yurei?style=for-the-badge&color=9b87f5)](https://github.com/ogkae/yurei/stargazers) |
@@ -33,7 +32,6 @@ $${\color{#9b87f5}y}{\color{#8b7ae5}u}{\color{#7b6dd5}r}{\color{#6b60c5}e}{\colo
 - [Security Considerations](#security-considerations)
 - [Contributing](#contributing)
 <!-- - [Licence](#licence) (already exist)-->
-
 ---
 
 ## Overview
@@ -41,16 +39,16 @@ $${\color{#9b87f5}y}{\color{#8b7ae5}u}{\color{#7b6dd5}r}{\color{#6b60c5}e}{\colo
 Yurei provides **cryptographic utilities without external dependencies**, built entirely on Python's standard library. Designed for **rapid prototyping**, **internal tooling**, and **environments with restricted package installation**.
 
 <details>
-<summary><b>Quick Example</b></summary>
+<summary><b><code>Quick Example</code></b></summary>
 
 ```python
 from yurei import encrypt_bytes, create_token, hash_password
 
-# - encrypt sensitive data -
-encrypted = encrypt_bytes(b"confidential", b"passphrase")
-
 # - generate signed tokens with expiration -
 token = create_token({"user": "alice"}, b"secret", ttl_seconds=3600)
+
+# - encrypt sensitive data -
+encrypted = encrypt_bytes(b"confidential", b"passphrase")
 
 # - hash passwords securely -
 pwd_hash = hash_password("SecurePass123")
@@ -95,16 +93,16 @@ graph TB
 
 ```diff
  Ideal For
-+ Rapid prototyping and MVPs
-+ Internal tooling and automation scripts
-+ Educational projects and cryptography learning
 + Environments with strict dependency constraints
-
++ Educational projects and cryptography learning
++ Internal tooling and automation scripts
++ Rapid prototyping and MVPs
+  -----------------------
  Not Suitable For
-- Production systems handling sensitive data
 - Compliance-regulated applications (PCI-DSS, HIPAA, GDPR)
-- High-security environments requiring formal audits
 - Applications requiring cryptographic certifications
+- High-security environments requiring formal audits
+- Production systems handling sensitive data
 ```
 
 ---
@@ -113,14 +111,14 @@ graph TB
 
 ```ini
 [Requirements]
-python_version = 3.10+
 dependencies   = none (stdlib only)
+python_version = 3.10+
 ```
 
 ```bash
 $ git clone https://github.com/ogkae/yurei
-$ cd yurei
 $ pip install -e .
+$ cd yurei
 ```
 
 <details>
@@ -145,10 +143,11 @@ $ pip install -e ".[dev]"
 ```python
 from yurei import (
     uuid4, hash_password, verify_password,
-    create_token, verify_token,
     encrypt_bytes, decrypt_bytes,
+    create_token, verify_token,
     KVStore
 )
+
 import os
 
 # - generate unique identifiers -
@@ -292,12 +291,12 @@ token = short_id(length=12)
 source      = os.urandom (system CSPRNG)
 format      = RFC 4122 compliant
 entropy     = 122 bits
-
+  -----------------------
 [SHA256 ID]
-algorithm   = SHA256
 input       = concatenated arguments + optional salt
 output      = 64-character hex string (256 bits)
-
+algorithm   = SHA256
+  -----------------------
 [Short ID]
 charset     = alphanumeric (a-z, A-Z, 0-9)
 length      = configurable (default: 12)
@@ -307,8 +306,8 @@ entropy     = ~71 bits (length=12)
 </details>
 
 ```diff
-+ Cryptographically secure random generation
 + Deterministic reproducibility (SHA256-based IDs)
++ Cryptographically secure random generation
 + Customisable token lengths
 + URL-safe character sets
 ```
@@ -339,11 +338,11 @@ is_valid = verify_password(pwd_hash, "WrongPassword")
 
 ```ini
 [Algorithm]
-kdf            = PBKDF2-HMAC-SHA256
 iterations     = 200,000 (default, configurable)
 salt_length    = 16 bytes (128 bits)
 output_length  = 32 bytes (256 bits)
-
+kdf            = PBKDF2-HMAC-SHA256
+  -----------------------
 [Protection]
 timing_attacks = constant-time comparison (hmac.compare_digest)
 rainbow_tables = random salt per password
@@ -409,10 +408,10 @@ eyJ1aWQiOiJ1c2VyMTIzIiwiZXhwIjoxNzM1MDAwMDAwfQ.a8f3KmN9pQ2xR5tY7uI1oP3sK6vL4wM
 
 ```ini
 [Signature]
-algorithm    = HMAC-SHA256
-input        = base64url(json_payload)
 output       = 32 bytes, base64url encoded
 verification = constant-time comparison
+input        = base64url(json_payload)
+algorithm    = HMAC-SHA256
 ```
 
 </details>
@@ -495,13 +494,13 @@ stage_1    = PBKDF2-HMAC-SHA256 (100k iterations)
 stage_2    = HKDF-SHA256 (key expansion)
 salt       = 16 bytes random (per encryption)
 output     = 64 bytes (encryption key + MAC key)
-
+  -----------------------
 [Encryption]
 scheme     = HMAC-based PRF stream cipher
 mode       = Encrypt-then-MAC
 nonce      = 12 bytes random (per encryption)
 block_size = 64 bytes
-
+  -----------------------
 [Authentication]
 mac           = HMAC-SHA256
 input         = salt + nonce + ciphertext
@@ -511,11 +510,11 @@ verification  = constant-time comparison
 
 ```diff
  Authenticated encryption (Encrypt-then-MAC)
++ Key derivation from arbitrary-length passphrases
 + Parallel processing support (large files)
 + Random salt and nonce per encryption
 + Constant-time MAC verification
-+ Key derivation from arbitrary-length passphrases
-
+  -----------------------
  Custom stream cipher (not AES-GCM/ChaCha20-Poly1305)
 - No formal security audit
 - Not suitable for high-security environments
@@ -567,13 +566,13 @@ with KVStore("data.db") as db:
 journal_mode = WAL (Write-Ahead Logging)
 synchronous  = NORMAL
 temp_store   = MEMORY
-
+  -----------------------
 [Schema]
-table     = kv_store
 columns   = key TEXT PRIMARY KEY, value TEXT
 index     = PRIMARY KEY on key
 encoding  = JSON serialisation
-
+table     = kv_store
+  -----------------------
 [Operations]
 get       = O(log n) with B-tree index
 set       = O(log n) with WAL buffering
@@ -618,13 +617,13 @@ restored = xor_deobfuscate(obfuscated, key)
 ```ini
 [Algorithm]
 operation = XOR (bitwise exclusive OR)
-key       = repeating key stream
 encoding  = base64 (output encoding)
-
+key       = repeating key stream
+  -----------------------
 [Security]
-strength       = none (trivially reversible)
-key_secrecy    = does not provide confidentiality
 integrity      = no authentication/tampering detection
+key_secrecy    = does not provide confidentiality
+strength       = none (trivially reversible)
 ```
 
 **How It Works:**
@@ -643,7 +642,7 @@ output:     base64(XOR result)
 + Obfuscating hardcoded strings in source code
 + Basic data mangling for non-security purposes
 + Lightweight encoding/decoding without dependencies
-
+  -----------------------
  Inappropriate Use Cases
 - Protecting passwords or credentials
 - Encrypting sensitive personal data
@@ -765,7 +764,7 @@ mypy yurei/
 
 <details>
 <summary><b><code>Contribution Workflow</code></b></summary>
-
+  
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
@@ -780,13 +779,11 @@ mypy yurei/
 - Update documentation as needed
 
 </details>
-
 ---
-
 ### Contributors
 
 <div align="center">
-
+  
 |[![Contributors](https://contrib.rocks/image?repo=ogkae/yurei)](https://github.com/ogkae/yurei/graphs/contributors)|
 |-|
 
@@ -796,10 +793,8 @@ mypy yurei/
 
 <br></br>
 
-
 | Licensed under the [`MIT Licence`](./LICENSE)<br></br><a href="https://discord.com/users/1394747147106254949"><img src="https://img.shields.io/badge/Discord-000000?style=for-the-badge&logo=discord"></a><a href="https://github.com/hexa-hosting"><img src="https://img.shields.io/badge/hexaʰ-000000?style=for-the-badge&logo=github"></a><a href="https://bento.me/ogkae"><img src="https://img.shields.io/badge/Bento-000000?style=for-the-badge&logo=bento"></a> |
 |:----:|
 
 </div>
 <!-- (Also distributed under the [Toaster Licence 2025](./TOASTER-LICENSE))  || 10/10/2025 - 24/12/2025 -->
-
