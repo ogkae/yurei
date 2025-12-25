@@ -780,6 +780,7 @@ mypy yurei/
 
 </details>
 ---
+
 ### Contributors
 
 <div align="center">
@@ -798,3 +799,4 @@ mypy yurei/
 
 </div>
 <!-- (Also distributed under the [Toaster Licence 2025](./TOASTER-LICENSE))  || 10/10/2025 - 24/12/2025 -->
+
