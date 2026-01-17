@@ -4,7 +4,7 @@ name = 'yurei'
 version = '1.4.0'
 description = 'Python toolkit for encryption, authentication, secure IDs, and lightweight storage.'
 authors = [
-  { name = 'ogkae', email = 'danimedinaduran24888@gmail.com' },
+  { name = 'zektrace', email = 'zek@alumni.com' },
 ]
 readme = 'README.md'
 requires-python = '>=3.10'
