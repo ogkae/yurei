@@ -20,7 +20,7 @@ Note:
 """
 
 __version__ = "1.4.1"
-__author__ = "ogkae"
+__author__ = "zektrace"
 __license__ = "MIT"
 
 from .uid import is_uuid4, sha256_id, short_id, uuid4
@@ -56,3 +56,4 @@ __all__ = (
     "xor_obfuscate",
     "xor_deobfuscate",
 )
+
