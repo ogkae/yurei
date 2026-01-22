@@ -1,7 +1,7 @@
 [project]
 
 name = 'yurei'
-version = '1.4.0'
+version = '1.4.1'
 description = 'Python toolkit for encryption, authentication, secure IDs, and lightweight storage.'
 authors = [
   { name = 'Zek', email = 'zek@europe.com' },
@@ -16,4 +16,5 @@ classifiers = [
   'Topic :: Security :: Cryptography',
   'Topic :: Software Development :: Libraries',
 ]
+
 
