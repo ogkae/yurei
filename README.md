@@ -13,8 +13,9 @@ $${\color{#9b87f5}y}{\color{#8b7ae5}u}{\color{#7b6dd5}r}{\color{#6b60c5}e}{\colo
 
 </div>
 
-> [!TIP]  
+<!-- > [!TIP]  
 > This project has been replaced by "*segur*", a new stable and long-range project. [*Check it out now!*](https://github.com/zektrace/segur) 
+-->
 
 ---
 
@@ -803,3 +804,4 @@ mypy yurei/
 
 </div>
 <!-- (Also distributed under the [Toaster Licence 2025](./TOASTER-LICENSE))  || 10/10/2025 - 24/12/2025 -->
+
